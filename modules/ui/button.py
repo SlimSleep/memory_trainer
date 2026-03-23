@@ -1,20 +1,22 @@
 import pygame
 
 class Button:
-    def __init__(self, x, y, width, height, image_path,
+    def __init__(self, x, y, width, height, image_path=None,
                   hover_image_path=None, click_image_path = None, click_sound_path=None,
-                  font=None, text='', text_color=(0,0,0), callback=None):
+                  font=None, text='', text_color=(0,0,0), callback=None, text_key=None, localizer=None):
 
             """
             x, y: координаты верхнего левого угла
             width, height: размер кнопки (будет масштабировать изображения)
-            image_path: путь к изображению для обычного состояния
+            image_path: путь к изображению для обычного состояния (опционально)
             hover_image_path: путь для состояния наведения (опционально)
             click_image_path: путь для состояния нажатия (опционально)
             font: шрифт Pygame для текста
             text: текст на кнопке
             text_color: цвет текста
             callback: функция, вызываемая при клике
+            text_key: ключ для локализации текста
+            localizer: объект локализатора
             """
             self.x = x
             self.y = y
@@ -25,25 +27,74 @@ class Button:
             self.font = font
             self.text = text
             self.text_color = text_color
+            self.text_key = text_key
+            self.localizer = None
 
             # Загружаем исходные изображения (сохраняем для повторного масштабирования)
-            self.orig_image = pygame.image.load(image_path).convert_alpha()
+            self.orig_image = pygame.image.load(image_path).convert_alpha() if image_path else None
             self.orig_hover_image = pygame.image.load(hover_image_path).convert_alpha() if hover_image_path else None
             self.orig_click_image = pygame.image.load(click_image_path).convert_alpha() if click_image_path else None
 
             # Масштабируем изображения под начальный размер
             self.scale_images()
             
-            self.hoverd = False
+            self.hovered = False
             self.clicked = False
+
+            self.set_localizer(localizer)
+
+    def _get_text(self):
+        """
+        Возвращает локализованную строку текста или исходный ключ/текст.
+        """
+        if self.localizer and self.text_key:
+            return self.localizer.get(self.text_key)
+        return self.text_key or self.text or ""
+
+    def set_localizer(self, localizer):
+        """
+        Устанавливает локализатор и обновляет текст. Подписывается на обновления языка.
+        """
+        if hasattr(self, 'localizer') and self.localizer is not None:
+            try:
+                self.localizer.unregister_observer(self._update_text)
+            except Exception:
+                pass
+
+        self.localizer = localizer
+
+        if self.localizer is not None and hasattr(self.localizer, 'register_observer'):
+            self.localizer.register_observer(self._update_text)
+
+        self._update_text()
+
+    def _update_text(self):
+        self.text = self._get_text()
+
+    def __del__(self):
+        if getattr(self, 'localizer', None) is not None:
+            try:
+                self.localizer.unregister_observer(self._update_text)
+            except Exception:
+                pass
 
     def scale_images(self):
             """Масштабирует все загруженные изображения под текущий размер кнопки"""
-            self.image = pygame.transform.scale(self.orig_image, (self.width, self.height))
+            if self.orig_image:
+                self.image = pygame.transform.scale(self.orig_image, (self.width, self.height))
+            else:
+                self.image = pygame.Surface((self.width, self.height))
+                self.image.fill((200, 200, 200))  # серый фон по умолчанию
             if self.orig_hover_image:
                 self.hover_image = pygame.transform.scale(self.orig_hover_image, (self.width, self.height))
+            else:
+                self.hover_image = pygame.Surface((self.width, self.height))
+                self.hover_image.fill((220, 220, 220))  # светло-серый для hover
             if self.orig_click_image:
                 self.click_image = pygame.transform.scale(self.orig_click_image, (self.width, self.height))
+            else:
+                self.click_image = pygame.Surface((self.width, self.height))
+                self.click_image.fill((180, 180, 180))  # тёмно-серый для click
 
     def set_size(self, width, height):
             """Устанавливает новый размер кнопки и масштабирует изображения"""
