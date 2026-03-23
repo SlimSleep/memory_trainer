@@ -19,7 +19,7 @@ def main():
                 running = False
             else:
                 screen_manager.handle_event(event)
-        screen_manager.flip()
+        screen_manager.update()
         screen_manager.draw()
     pygame.quit()
     sys.exit()
