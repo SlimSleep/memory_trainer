@@ -1,16 +1,28 @@
-# This is a sample Python script.
+import pygame
+import sys
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from config import window_width, window_height, fps
+from modules.ui.screen_manager import ScreenManager
 
+def main():
+    pygame.init()
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+    screen_manager = ScreenManager((window_width, window_height)) 
+    clock = pygame.time.clock()
 
+    running = True
+    while running == True:
+        dt = clock.tick(fps) / 1000.0
+        
+        for event in  pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            else:
+                screen_manager.handle_event(event)
+        screen_manager.update(dt)
+        screen_manager.draw()
+    pygame.quit()
+    sys.exit()
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+if __name__ == "__main__":
+    main()
