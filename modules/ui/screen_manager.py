@@ -1,11 +1,27 @@
 import pygame
 class ScreenManager:
+    """
+    Менеджер экранов для управления отображением разных частей приложения.
+    Позволяет добавлять экраны, переключаться между ними,
+    обрабатывать события и отрисовку централизованно.
+    """
     def __init__(self, screen): #screen это объект pygame.Surface, на котором будут отрисовываться все экраны
+        """
+        Инициализация менеджера.
+        
+        :param screen: поверхность Pygame для рисования
+        """
         self.screen = screen
         self.screens = {} #словарь для хранения всех экранов, ключ - имя экрана, значение - объект экрана
         self.current_screen = None #текущее имя экрана, который отображается в данный момент
 
     def add_screen(self, name, screen_obj): #
+        """
+        Добавляет экран в менеджер.
+        
+        :param name: имя экрана (строка)
+        :param screen_obj: объект экрана (с методами handle_event, draw, update)
+        """
         self.screens[name] = screen_obj
 
     def set_screen(self, name):
@@ -30,10 +46,16 @@ class ScreenManager:
             self.screens[self.current_screen].handle_event(event)
 
     def draw(self):
+        """
+        Отрисовывает текущий экран и обновляет дисплей.
+        """
         if self.current_screen:
             self.screens[self.current_screen].draw(self.screen)
         pygame.display.flip() 
 
     def update(self):
+        """
+        Обновляет логику текущего экрана.
+        """
         if self.current_screen:
             self.screens[self.current_screen].update()
