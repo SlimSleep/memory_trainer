@@ -28,6 +28,12 @@ def main():
     localizer = Localizer(lang=config.DEFAULT_LANGUAGE, localization_dir=config.LOCALIZATION_DIR)
     print(f"✓ Локализатор инициализирован, язык: {config.DEFAULT_LANGUAGE}")
     
+    from modules.database.db_manager import DatabaseManager
+
+    # Инициализация БД
+    db = DatabaseManager(config.DB_PATH)
+    print(f"✓ База данных инициализирована: {config.DB_PATH}")
+
     # Создание шрифтов
     font_small = pygame.font.Font(config.FONT_NAME, config.FONT_SIZE_SMALL)
     font_normal = pygame.font.Font(config.FONT_NAME, config.FONT_SIZE_NORMAL)
