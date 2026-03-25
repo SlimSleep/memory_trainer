@@ -100,3 +100,7 @@ DIGITS_LEVELS = {
     2: {'length': 7, 'time_limit': 15},
     3: {'length': 9, 'time_limit': 20},
 }
+
+# Data base
+DB_DIR = "data"
+DB_PATH = "data/users.db"
