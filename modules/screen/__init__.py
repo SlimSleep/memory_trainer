@@ -4,7 +4,11 @@
 """
 
 from .menu import MenuScreen
+from .login import LoginScreen
+from .settings import SettingsScreen
 
 __all__ = [
     'MenuScreen',
+    'LoginScreen',
+    'SettingsScreen',
 ]

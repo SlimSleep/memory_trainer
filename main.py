@@ -10,6 +10,8 @@ import config
 from localization.localization import Localizer
 from modules.ui.screen_manager import ScreenManager
 from modules.screen.menu import MenuScreen
+from modules.screen.login import LoginScreen
+from modules.screen.settings import SettingsScreen
 
 
 def main():
@@ -45,9 +47,26 @@ def main():
     screen_manager = ScreenManager(screen)
     print("✓ ScreenManager инициализирован")
     
-    # Создание меню и добавление в менеджер
+    # Создание экранов и добавление в менеджер
     menu_screen = MenuScreen(screen_manager, localizer, font_normal, font_large)
+    login_screen = LoginScreen(screen_manager, localizer, font_normal, font_small)
+    settings_screen = SettingsScreen(screen_manager, localizer, font_normal, font_small)
+    
     screen_manager.add_screen("menu", menu_screen)
+    screen_manager.add_screen("login", login_screen)
+    screen_manager.add_screen("settings", settings_screen)
+
+    # Попытка загрузить сессию из файла
+    from modules.session import load_session
+    remembered_username = load_session()
+    if remembered_username:
+        user = db.get_user_by_name(remembered_username)
+        if user:
+            screen_manager.context['current_user'] = user
+            print(f"✓ Сессия загружена: {remembered_username}")
+        else:
+            print(f"⚠ Сессия содержит неизвестного пользователя: {remembered_username}")
+
     screen_manager.set_screen("menu")
     print("✓ Меню создано и активировано")
     

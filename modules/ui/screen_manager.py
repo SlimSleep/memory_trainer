@@ -14,6 +14,7 @@ class ScreenManager:
         self.screen = screen
         self.screens = {} #словарь для хранения всех экранов, ключ - имя экрана, значение - объект экрана
         self.current_screen = None #текущее имя экрана, который отображается в данный момент
+        self.context = {}  # Общий контекст для обмена данными между экранами
 
     def add_screen(self, name, screen_obj): #
         """

@@ -52,8 +52,18 @@ class MenuScreen(Screen):
             center=True,
             localizer=self.loc
         )
-        
-        # Кнопка "Начать игру"
+
+        self.user_label = Label(
+            x=screen_width // 2,
+            y=130,
+            text_key=None,
+            font=self.font,
+            color=config.COLOR_BLACK,
+            center=True,
+            localizer=None
+        )
+
+        # Кнопка "Вход / регистрация"
         start_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
             y=200,
@@ -61,8 +71,8 @@ class MenuScreen(Screen):
             height=config.BUTTON_HEIGHT,
             font=self.font,
             text_color=config.COLOR_BLACK,
-            text_key="start_game",
-            callback=self.on_start_game,
+            text_key="sign_in",
+            callback=self.on_login,
             localizer=self.loc
         )
         self.buttons.append(start_btn)
@@ -119,11 +129,10 @@ class MenuScreen(Screen):
             callback=self.on_language_change
         )
 
-    def on_start_game(self):
-        """Обработчик кнопки 'Начать игру'"""
-        print("➜ Нажата кнопка 'Начать игру'")
-        # В будущем здесь будет переход на экран выбора игры
-        # self.manager.set_screen("game_choice")
+    def on_login(self):
+        """Обработчик кнопки 'Вход / регистрация'"""
+        print("➜ Нажата кнопка 'Вход / регистрация'")
+        self.manager.set_screen("login")
 
     def on_settings(self):
         """Обработчик кнопки 'Настройки'"""
@@ -171,7 +180,17 @@ class MenuScreen(Screen):
         
         # Заголовок
         self.title.draw(screen)
-        
+
+        if self.manager.context.get('current_user'):
+            user = self.manager.context['current_user']
+            self.user_label.text = f"{self.loc.get('user')}: {user.username}"
+            self.user_label._update_surface()
+            self.user_label.draw(screen)
+        else:
+            self.user_label.text = self.loc.get('not_logged_in')
+            self.user_label._update_surface()
+            self.user_label.draw(screen)
+
         # Кнопки
         for btn in self.buttons:
             btn.draw(screen)
