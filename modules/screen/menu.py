@@ -137,8 +137,7 @@ class MenuScreen(Screen):
     def on_settings(self):
         """Обработчик кнопки 'Настройки'"""
         print("➜ Нажата кнопка 'Настройки'")
-        # В будущем здесь будет экран настроек
-        # self.manager.set_screen("settings")
+        self.manager.set_screen("settings")
 
     def on_exit(self):
         """Обработчик кнопки 'Выход'"""
