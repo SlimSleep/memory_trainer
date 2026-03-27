@@ -77,6 +77,7 @@ class LoginScreen(Screen):
         self.message = ''
         self.message_label.text = ''
 
+
     def try_login(self):
         username = self.username_box.get_text().strip()
         if not username:

@@ -67,7 +67,7 @@ def main():
         else:
             print(f"⚠ Сессия содержит неизвестного пользователя: {remembered_username}")
 
-    screen_manager.set_screen("menu")
+    screen_manager.set_screen("login")
     print("✓ Меню создано и активировано")
     
     # Главный цикл приложения

@@ -6,6 +6,7 @@ class Label:
         self.x = x
         self.y = y
         self.text_key = text_key
+        self.text = None
         self.font = font
         self.color = color
         self.center = center
@@ -14,8 +15,10 @@ class Label:
         
     def _get_text(self):
         """
-        Возвращает локализованную строку текста или исходный ключ/текст.
+        Возвращает текст сообщения, локализованную строку или исходный ключ.
         """
+        if self.text is not None:
+            return self.text
         if self.localizer and self.text_key:
             return self.localizer.get(self.text_key)
         return self.text_key or ""

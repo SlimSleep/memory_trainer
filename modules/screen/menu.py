@@ -63,6 +63,16 @@ class MenuScreen(Screen):
             localizer=None
         )
 
+        self.user_label = Label(
+            x=screen_width // 2,
+            y=130,
+            text_key=None,
+            font=self.font,
+            color=config.COLOR_BLACK,
+            center=True,
+            localizer=None
+        )
+        
         # Кнопка "Вход / регистрация"
         start_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
