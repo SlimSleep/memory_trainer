@@ -46,6 +46,17 @@ class SettingsScreen(Screen):
             initial_val=50,
             callback=self.on_volume_change
         )
+        
+        self.language_slider = Slider(
+            x=220,
+            y=220,
+            width=150,
+            height=30,
+            min_val=0,
+            max_val=1,
+            initial_val=0 if self.loc.get_lang() == 'ru' else 1,
+            callback=self.on_language_change
+        )
 
         self.language_label = Label(
             x=150,
@@ -90,6 +101,7 @@ class SettingsScreen(Screen):
     def handle_event(self, event):
         self.volume_slider.handle_event(event)
         self.back_button.handle_event(event)
+        self.language_slider.handle_event(event)
 
     def update(self):
         pass
@@ -99,6 +111,7 @@ class SettingsScreen(Screen):
         self.title.draw(screen)
         self.volume_label.draw(screen)
         self.volume_slider.draw(screen)
+        self.language_slider.draw(screen)
         self.language_label.draw(screen)
 
         if self.status_label.text:
