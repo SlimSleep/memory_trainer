@@ -3,6 +3,8 @@
 """
 
 import pygame
+from pygame.base import set_error
+
 from modules.ui.screen import Screen
 from modules.ui.label import Label
 from modules.ui.textbox import TextBox
@@ -44,7 +46,7 @@ class LoginScreen(Screen):
         self.message_label = Label(
             x=manager.screen.get_width() // 2,
             y=250,
-            text_key=None,
+            text_key= self.message,
             font=self.font_small,
             color=config.COLOR_RED,
             center=True,

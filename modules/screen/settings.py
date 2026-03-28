@@ -37,7 +37,7 @@ class SettingsScreen(Screen):
         )
 
         self.volume_slider = Slider(
-            x=220,
+            x=280,
             y=165,
             width=400,
             height=25,
@@ -48,7 +48,7 @@ class SettingsScreen(Screen):
         )
         
         self.language_slider = Slider(
-            x=220,
+            x=280,
             y=220,
             width=150,
             height=30,
@@ -88,6 +88,16 @@ class SettingsScreen(Screen):
             center=True,
             localizer=None
         )
+
+    def on_language_change(self, value):
+        """
+        Обработчик изменения языка через слайдер.
+
+        :param value: значение слайдера (0 или 1)
+        """
+        lang = 'ru' if value < 0.5 else 'en'
+        self.loc.switch_lang(lang)
+        print(f"➜ Язык изменён на: {lang}")
 
     def on_volume_change(self, value):
         self.status_label.text = self.loc.get('volume').upper() + f": {int(value)}%"

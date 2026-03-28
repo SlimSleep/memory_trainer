@@ -8,6 +8,7 @@ from modules.ui.screen import Screen
 from modules.ui.button import Button
 from modules.ui.label import Label
 from modules.ui.slider import Slider
+from modules.database.db_manager import DatabaseManager
 import config
 
 
