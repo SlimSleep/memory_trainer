@@ -173,18 +173,22 @@ class MatchPairsScreen(Screen):
 
         if self.game:
             for card in self.game.cards:
-                if card['revealed'] or card['matched']:
-                    pygame.draw.rect(screen, card['color'], card['rect'])
-                    pygame.draw.rect(screen, config.COLOR_BLACK, card['rect'], 2)
+                display_rect = card.get('current_rect', card['rect'])
+                if not self.game.animation_done:
+                    pygame.draw.rect(screen, config.COLOR_GRAY_DARK, display_rect)
+                    pygame.draw.rect(screen, config.COLOR_GRAY, display_rect, 2)
+                elif self.game.previewing or card['revealed'] or card['matched']:
+                    pygame.draw.rect(screen, card['color'], display_rect)
+                    pygame.draw.rect(screen, config.COLOR_BLACK, display_rect, 2)
                     label = self.font_small.render(str(card['pair_id']), True, config.COLOR_BLACK)
-                    label_rect = label.get_rect(center=card['rect'].center)
+                    label_rect = label.get_rect(center=display_rect.center)
                     screen.blit(label, label_rect)
                 else:
-                    pygame.draw.rect(screen, config.COLOR_GRAY_DARK, card['rect'])
-                    pygame.draw.rect(screen, config.COLOR_GRAY, card['rect'], 2)
+                    pygame.draw.rect(screen, config.COLOR_GRAY_DARK, display_rect)
+                    pygame.draw.rect(screen, config.COLOR_GRAY, display_rect, 2)
 
                 if card['matched']:
-                    pygame.draw.rect(screen, config.COLOR_GREEN, card['rect'], 4)
+                    pygame.draw.rect(screen, config.COLOR_GREEN, display_rect, 4)
 
         if self.game and self.game.is_completed():
             over_text = self.loc.get('game_over')

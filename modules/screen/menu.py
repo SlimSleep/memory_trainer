@@ -119,7 +119,7 @@ class MenuScreen(Screen):
         # Кнопка "Выход"
         exit_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=200 + 2 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
+            y=200 + 3 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
