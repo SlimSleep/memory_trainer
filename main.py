@@ -12,6 +12,8 @@ from modules.ui.screen_manager import ScreenManager
 from modules.screen.menu import MenuScreen
 from modules.screen.login import LoginScreen
 from modules.screen.settings import SettingsScreen
+from modules.screen.match_pairs import MatchPairsScreen
+from modules.database.db_manager import DatabaseManager
 
 
 def main():
@@ -29,8 +31,6 @@ def main():
     # Инициализация локализации
     localizer = Localizer(lang=config.DEFAULT_LANGUAGE, localization_dir=config.LOCALIZATION_DIR)
     print(f"✓ Локализатор инициализирован, язык: {config.DEFAULT_LANGUAGE}")
-    
-    from modules.database.db_manager import DatabaseManager
 
     # Инициализация БД
     db = DatabaseManager(config.DB_PATH)
@@ -50,10 +50,12 @@ def main():
     # Создание экранов и добавление в менеджер
     menu_screen = MenuScreen(screen_manager, localizer, font_normal, font_large)
     login_screen = LoginScreen(screen_manager, localizer, font_normal, font_small)
+    match_pairs_screen = MatchPairsScreen(screen_manager, localizer, font_normal, font_small, font_large)
     settings_screen = SettingsScreen(screen_manager, localizer, font_normal, font_small)
     
     screen_manager.add_screen("menu", menu_screen)
     screen_manager.add_screen("login", login_screen)
+    screen_manager.add_screen("match_pairs", match_pairs_screen)
     screen_manager.add_screen("settings", settings_screen)
 
     # Попытка загрузить сессию из файла

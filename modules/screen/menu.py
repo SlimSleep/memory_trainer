@@ -88,10 +88,24 @@ class MenuScreen(Screen):
         )
         self.buttons.append(start_btn)
         
+        # Кнопка "Найди пару"
+        match_pairs_btn = Button(
+            x=screen_width // 2 - config.BUTTON_WIDTH // 2,
+            y=200 + config.BUTTON_HEIGHT + config.BUTTON_SPACING,
+            width=config.BUTTON_WIDTH,
+            height=config.BUTTON_HEIGHT,
+            font=self.font,
+            text_color=config.COLOR_BLACK,
+            text_key="match_pairs",
+            callback=self.on_match_pairs,
+            localizer=self.loc
+        )
+        self.buttons.append(match_pairs_btn)
+        
         # Кнопка "Настройки"
         settings_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=200 + config.BUTTON_HEIGHT + config.BUTTON_SPACING,
+            y=200 + 2 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -144,6 +158,11 @@ class MenuScreen(Screen):
         """Обработчик кнопки 'Вход / регистрация'"""
         print("➜ Нажата кнопка 'Вход / регистрация'")
         self.manager.set_screen("login")
+
+    def on_match_pairs(self):
+        """Обработчик кнопки 'Найди пару'"""
+        print("➜ Нажата кнопка 'Найди пару'")
+        self.manager.set_screen("match_pairs")
 
     def on_settings(self):
         """Обработчик кнопки 'Настройки'"""
