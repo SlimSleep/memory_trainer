@@ -18,6 +18,8 @@
   "english": "English",
   "russian": "Русский",
   "sound": "Звук",
+  "sound_effects": "Звуковые эффекты",
+  "background_volume": "Фоновая музыка",
   "volume": "Громкость",
   "login_title": "Вход / Регистрация",
   "name_placeholder": "Введите имя",

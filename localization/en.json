@@ -18,6 +18,8 @@
   "english": "English",
   "russian": "Russian",
   "sound": "Sound",
+  "sound_effects": "Sound Effects",
+  "background_volume": "Background Music",
   "volume": "Volume",
   "login_title": "Login / Register",
   "name_placeholder": "Enter your name",

@@ -48,7 +48,9 @@ def main():
     
     # Создание менеджера экранов
     screen_manager = ScreenManager(screen)
-    screen_manager.context['volume'] = config.DEFAULT_VOLUME_PERCENT
+    screen_manager.context['sfx_volume'] = config.DEFAULT_SFX_VOLUME_PERCENT
+    screen_manager.context['bg_volume'] = config.DEFAULT_BG_VOLUME_PERCENT
+    screen_manager.context['volume'] = config.DEFAULT_SFX_VOLUME_PERCENT
     print("✓ ScreenManager инициализирован")
     
     # Создание экранов и добавление в менеджер

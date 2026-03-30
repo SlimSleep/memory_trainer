@@ -27,30 +27,51 @@ class SettingsScreen(Screen):
             localizer=self.loc
         )
 
-        self.volume_label = Label(
+        self.sfx_label = Label(
             x=150,
             y=160,
-            text_key='volume',
+            text_key='sound_effects',
             font=self.font,
             color=config.COLOR_BLACK,
             center=False,
             localizer=self.loc
         )
 
-        self.volume_slider = Slider(
-            x=280,
+        self.sfx_slider = Slider(
+            x=380,
             y=165,
-            width=400,
+            width=520,
             height=25,
             min_val=0,
             max_val=100,
-            initial_val=self.manager.context.get('volume', config.DEFAULT_VOLUME_PERCENT),
-            callback=self.on_volume_change
+            initial_val=self.manager.context.get('sfx_volume', config.DEFAULT_SFX_VOLUME_PERCENT),
+            callback=self.on_sfx_volume_change
         )
-        
+
+        self.bg_label = Label(
+            x=150,
+            y=235,
+            text_key='background_volume',
+            font=self.font,
+            color=config.COLOR_BLACK,
+            center=False,
+            localizer=self.loc
+        )
+
+        self.bg_slider = Slider(
+            x=380,
+            y=240,
+            width=520,
+            height=25,
+            min_val=0,
+            max_val=100,
+            initial_val=self.manager.context.get('bg_volume', config.DEFAULT_BG_VOLUME_PERCENT),
+            callback=self.on_bg_volume_change
+        )
+
         self.difficulty_label = Label(
             x=150,
-            y=240,
+            y=310,
             text_key='difficulty',
             font=self.font,
             color=config.COLOR_BLACK,
@@ -59,9 +80,9 @@ class SettingsScreen(Screen):
         )
 
         self.difficulty_slider = Slider(
-            x=220,
-            y=245,
-            width=400,
+            x=380,
+            y=315,
+            width=520,
             height=25,
             min_val=1,
             max_val=3,
@@ -70,8 +91,8 @@ class SettingsScreen(Screen):
         )
 
         self.difficulty_value = Label(
-            x=640,
-            y=240,
+            x=920,
+            y=310,
             text_key=None,
             font=self.font,
             color=config.COLOR_BLACK,
@@ -80,8 +101,8 @@ class SettingsScreen(Screen):
         )
 
         self.language_slider = Slider(
-            x=220,
-            y=300,
+            x=380,
+            y=385,
             width=150,
             height=30,
             min_val=0,
@@ -92,7 +113,7 @@ class SettingsScreen(Screen):
 
         self.language_label = Label(
             x=150,
-            y=300,
+            y=380,
             text_key='language',
             font=self.font,
             color=config.COLOR_BLACK,
@@ -102,7 +123,7 @@ class SettingsScreen(Screen):
 
         self.back_button = Button(
             x=manager.screen.get_width() // 2 - config.BUTTON_WIDTH // 2,
-            y=330,
+            y=470,
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -114,7 +135,7 @@ class SettingsScreen(Screen):
 
         self.status_label = Label(
             x=manager.screen.get_width() // 2,
-            y=360,
+            y=430,
             text_key=None,
             font=self.font_small,
             color=config.COLOR_BLACK,
@@ -132,11 +153,17 @@ class SettingsScreen(Screen):
         self.loc.switch_lang(lang)
         print(f"➜ Язык изменён на: {lang}")
 
-    def on_volume_change(self, value):
+    def on_sfx_volume_change(self, value):
         volume_percent = int(round(value))
-        self.manager.context['volume'] = volume_percent
-        audio.set_volume(volume_percent / 100)
-        self.status_label.text = self.loc.get('volume').upper() + f": {volume_percent}%"
+        self.manager.context['sfx_volume'] = volume_percent
+        audio.set_sfx_volume(volume_percent / 100)
+        self.status_label.text = self.loc.get('sound_effects').upper() + f": {volume_percent}%"
+
+    def on_bg_volume_change(self, value):
+        volume_percent = int(round(value))
+        self.manager.context['bg_volume'] = volume_percent
+        audio.set_bg_volume(volume_percent / 100)
+        self.status_label.text = self.loc.get('background_volume').upper() + f": {volume_percent}%"
 
     def on_difficulty_change(self, value):
         level = int(round(value))
@@ -151,16 +178,20 @@ class SettingsScreen(Screen):
         self.difficulty_slider.set_value(selected_level)
         self.difficulty_value.text = str(selected_level)
         self.difficulty_value._update_surface()
-        current_volume = int(self.manager.context.get('volume', config.DEFAULT_VOLUME_PERCENT))
-        self.volume_slider.set_value(current_volume)
-        audio.set_volume(current_volume / 100)
-        self.status_label.text = self.loc.get('volume').upper() + f": {current_volume}%"
+        current_sfx = int(self.manager.context.get('sfx_volume', config.DEFAULT_SFX_VOLUME_PERCENT))
+        current_bg = int(self.manager.context.get('bg_volume', config.DEFAULT_BG_VOLUME_PERCENT))
+        self.sfx_slider.set_value(current_sfx)
+        self.bg_slider.set_value(current_bg)
+        audio.set_sfx_volume(current_sfx / 100)
+        audio.set_bg_volume(current_bg / 100)
+        self.status_label.text = self.loc.get('sound_effects').upper() + f": {current_sfx}%"
 
     def go_back(self):
         self.manager.set_screen('menu')
 
     def handle_event(self, event):
-        self.volume_slider.handle_event(event)
+        self.sfx_slider.handle_event(event)
+        self.bg_slider.handle_event(event)
         self.difficulty_slider.handle_event(event)
         self.back_button.handle_event(event)
         self.language_slider.handle_event(event)
@@ -171,15 +202,17 @@ class SettingsScreen(Screen):
     def draw(self, screen):
         screen.fill(self.bg_color)
         self.title.draw(screen)
-        self.volume_label.draw(screen)
-        self.volume_slider.draw(screen)
+        self.sfx_label.draw(screen)
+        self.sfx_slider.draw(screen)
+        self.bg_label.draw(screen)
+        self.bg_slider.draw(screen)
         self.difficulty_label.draw(screen)
         self.difficulty_slider.draw(screen)
         if self.difficulty_value.text:
             self.difficulty_value._update_surface()
             self.difficulty_value.draw(screen)
-        self.language_slider.draw(screen)
         self.language_label.draw(screen)
+        self.language_slider.draw(screen)
 
         if self.status_label.text:
             self.status_label._update_surface()
