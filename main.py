@@ -13,6 +13,7 @@ from modules.screen.menu import MenuScreen
 from modules.screen.login import LoginScreen
 from modules.screen.settings import SettingsScreen
 from modules.screen.match_pairs import MatchPairsScreen
+from modules.screen.sequence import SequenceScreen
 from modules.database.db_manager import DatabaseManager
 
 
@@ -37,10 +38,10 @@ def main():
     print(f"✓ База данных инициализирована: {config.DB_PATH}")
 
     # Создание шрифтов
-    font_small = pygame.font.Font(config.FONT_NAME, config.FONT_SIZE_SMALL)
-    font_normal = pygame.font.Font(config.FONT_NAME, config.FONT_SIZE_NORMAL)
-    font_large = pygame.font.Font(config.FONT_NAME, config.FONT_SIZE_LARGE)
-    font_title = pygame.font.Font(config.FONT_NAME, config.FONT_SIZE_TITLE)
+    font_small = pygame.font.Font(None, config.FONT_SIZE_SMALL)
+    font_normal = pygame.font.Font(None, config.FONT_SIZE_NORMAL)
+    font_large = pygame.font.Font(None, config.FONT_SIZE_LARGE)
+    font_title = pygame.font.Font(None, config.FONT_SIZE_TITLE)
     print("✓ Шрифты инициализированы")
     
     # Создание менеджера экранов
@@ -51,11 +52,13 @@ def main():
     menu_screen = MenuScreen(screen_manager, localizer, font_normal, font_large)
     login_screen = LoginScreen(screen_manager, localizer, font_normal, font_small)
     match_pairs_screen = MatchPairsScreen(screen_manager, localizer, font_normal, font_small, font_large)
+    sequence_screen = SequenceScreen(screen_manager, localizer, font_normal, font_small, font_large)
     settings_screen = SettingsScreen(screen_manager, localizer, font_normal, font_small)
     
     screen_manager.add_screen("menu", menu_screen)
     screen_manager.add_screen("login", login_screen)
     screen_manager.add_screen("match_pairs", match_pairs_screen)
+    screen_manager.add_screen("sequence", sequence_screen)
     screen_manager.add_screen("settings", settings_screen)
 
     # Попытка загрузить сессию из файла
@@ -70,17 +73,17 @@ def main():
             print(f"⚠ Сессия содержит неизвестного пользователя: {remembered_username}")
 
     screen_manager.set_screen("login")
-    print("✓ Меню создано и активировано")
+    print("✓ Экран логина активирован")
     
     # Главный цикл приложения
     clock = pygame.time.Clock()
     running = True
     
     print("\n" + "="*60)
-    print("🎮 ТРЕНАЖЁР ПАМЯТИ - ДЕМО UI СИСТЕМЫ")
+    print("🎮 ТРЕНАЖЁР ПАМЯТИ - ЗАПУЩЕН")
     print("="*60)
-    print("• Нажимайте на кнопки для тестирования")
-    print("• Используйте слайдер внизу для смены языка (РУ/EN)")
+    print("• Доступные игры: Найди пару, Запомни последовательность")
+    print("• Используйте слайдер в настройках для смены языка")
     print("• Нажмите 'Выход' или закройте окно для завершения")
     print("="*60 + "\n")
     
@@ -110,4 +113,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
