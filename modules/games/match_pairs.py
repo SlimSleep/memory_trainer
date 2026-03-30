@@ -100,11 +100,11 @@ class MatchPairsGame:
 
     def select_card(self, index, current_time):
         if self.completed or self.locked or not self.animation_done or self.previewing:
-            return
+            return None
 
         card = self.cards[index]
         if card['revealed'] or card['matched']:
-            return
+            return None
 
         card['revealed'] = True
         self.selected_indices.append(index)
@@ -122,9 +122,13 @@ class MatchPairsGame:
                 if self.matched_pairs == self.pair_count:
                     self.completed = True
                     self.finish_time = current_time
+                    return 'victory'
+                return 'match'
             else:
                 self.locked = True
                 self.locked_until = current_time + 1000
+                return 'wrong'
+        return None
 
     def update(self, current_time):
         if not self.animation_done:

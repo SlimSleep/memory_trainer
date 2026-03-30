@@ -3,6 +3,7 @@
 """
 
 import pygame
+from modules import audio
 from modules.ui.screen import Screen
 from modules.ui.label import Label
 from modules.ui.button import Button
@@ -43,7 +44,7 @@ class SettingsScreen(Screen):
             height=25,
             min_val=0,
             max_val=100,
-            initial_val=50,
+            initial_val=self.manager.context.get('volume', config.DEFAULT_VOLUME_PERCENT),
             callback=self.on_volume_change
         )
         
@@ -106,6 +107,7 @@ class SettingsScreen(Screen):
             height=config.BUTTON_HEIGHT,
             font=self.font,
             text_key='back',
+            click_sound_path=config.BUTTON_CLICK_SOUND,
             localizer=self.loc,
             callback=self.go_back
         )
@@ -131,7 +133,10 @@ class SettingsScreen(Screen):
         print(f"➜ Язык изменён на: {lang}")
 
     def on_volume_change(self, value):
-        self.status_label.text = self.loc.get('volume').upper() + f": {int(value)}%"
+        volume_percent = int(round(value))
+        self.manager.context['volume'] = volume_percent
+        audio.set_volume(volume_percent / 100)
+        self.status_label.text = self.loc.get('volume').upper() + f": {volume_percent}%"
 
     def on_difficulty_change(self, value):
         level = int(round(value))
@@ -146,6 +151,10 @@ class SettingsScreen(Screen):
         self.difficulty_slider.set_value(selected_level)
         self.difficulty_value.text = str(selected_level)
         self.difficulty_value._update_surface()
+        current_volume = int(self.manager.context.get('volume', config.DEFAULT_VOLUME_PERCENT))
+        self.volume_slider.set_value(current_volume)
+        audio.set_volume(current_volume / 100)
+        self.status_label.text = self.loc.get('volume').upper() + f": {current_volume}%"
 
     def go_back(self):
         self.manager.set_screen('menu')

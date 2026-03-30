@@ -61,6 +61,12 @@ ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 FONTS_DIR = os.path.join(ASSETS_DIR, 'fonts')
 IMAGES_DIR = os.path.join(ASSETS_DIR, 'images')
 SOUNDS_DIR = os.path.join(ASSETS_DIR, 'sounds')
+BUTTON_CLICK_SOUND = os.path.join(SOUNDS_DIR, 'Menu_buttons.wav')
+MATCH_PAIRS_WRONG_SOUND = os.path.join(SOUNDS_DIR, 'Wrong.wav')
+MATCH_PAIRS_VICTORY_SOUND = os.path.join(SOUNDS_DIR, 'Victory.mp3')
+DEFAULT_AUDIO_VOLUME = 0.5
+DEFAULT_VOLUME_PERCENT = 50
+AUDIO_DIR = os.path.join(BASE_DIR, 'audio')
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 LOCALIZATION_DIR = os.path.join(BASE_DIR, 'localization')
 

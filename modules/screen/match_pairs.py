@@ -2,6 +2,7 @@
 
 import pygame
 import config
+from modules import audio
 from modules.ui.screen import Screen
 from modules.ui.label import Label
 from modules.ui.button import Button
@@ -55,6 +56,9 @@ class MatchPairsScreen(Screen):
             localizer=None
         )
 
+        self.wrong_sound = audio.load_sound(config.MATCH_PAIRS_WRONG_SOUND)
+        self.victory_sound = audio.load_sound(config.MATCH_PAIRS_VICTORY_SOUND)
+
         self.back_button = Button(
             x=30,
             y=manager.screen.get_height() - 100,
@@ -62,6 +66,7 @@ class MatchPairsScreen(Screen):
             height=config.BUTTON_HEIGHT,
             font=self.font,
             text_key='back',
+            click_sound_path=config.BUTTON_CLICK_SOUND,
             localizer=self.loc,
             callback=self.on_back
         )
@@ -72,6 +77,7 @@ class MatchPairsScreen(Screen):
             height=config.BUTTON_HEIGHT,
             font=self.font,
             text_key='restart',
+            click_sound_path=config.BUTTON_CLICK_SOUND,
             localizer=self.loc,
             callback=self.on_restart
         )
@@ -112,7 +118,11 @@ class MatchPairsScreen(Screen):
             if self.game and not self.game.locked and not self.game.completed:
                 index = self.game.get_card_index_at(event.pos)
                 if index is not None:
-                    self.game.select_card(index, pygame.time.get_ticks())
+                    result = self.game.select_card(index, pygame.time.get_ticks())
+                    if result == 'wrong' and self.wrong_sound:
+                        self.wrong_sound.play()
+                    elif result == 'victory' and self.victory_sound:
+                        self.victory_sound.play()
                     if self.game.is_completed():
                         self._save_results()
 

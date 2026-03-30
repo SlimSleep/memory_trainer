@@ -8,6 +8,7 @@ import pygame
 import sys
 import config
 from localization.localization import Localizer
+from modules import audio
 from modules.ui.screen_manager import ScreenManager
 from modules.screen.menu import MenuScreen
 from modules.screen.login import LoginScreen
@@ -22,6 +23,7 @@ def main():
     
     # Инициализация Pygame
     pygame.init()
+    audio.init_audio()
     print("✓ Pygame инициализирован")
     
     # Создание окна
@@ -46,6 +48,7 @@ def main():
     
     # Создание менеджера экранов
     screen_manager = ScreenManager(screen)
+    screen_manager.context['volume'] = config.DEFAULT_VOLUME_PERCENT
     print("✓ ScreenManager инициализирован")
     
     # Создание экранов и добавление в менеджер

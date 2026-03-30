@@ -1,4 +1,5 @@
 import pygame
+from modules import audio
 
 
 class Button:
@@ -37,6 +38,8 @@ class Button:
         self.orig_image = self._load_image(image_path)
         self.orig_hover_image = self._load_image(hover_image_path)
         self.orig_click_image = self._load_image(click_image_path)
+        self.click_sound_path = click_sound_path
+        self.click_sound = self._load_sound(click_sound_path)
 
         # Масштабируем изображения под начальный размер
         self.scale_images()
@@ -67,6 +70,12 @@ class Button:
         except pygame.error as e:
             print(f"⚠ Ошибка при загрузке спрайта {path}: {e}. Используется заглушка.")
             return None
+
+    def _load_sound(self, path):
+        """
+        Загружает звук из файла для кнопки.
+        """
+        return audio.load_sound(path)
 
     def _get_text(self):
         """
@@ -148,6 +157,11 @@ class Button:
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
                 self.clicked = True
+                if self.click_sound:
+                    try:
+                        self.click_sound.play()
+                    except pygame.error:
+                        pass
                 if self.callback:
                     self.callback()
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:

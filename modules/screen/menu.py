@@ -59,6 +59,7 @@ class MenuScreen(Screen):
             font=self.font,
             text_color=config.COLOR_BLACK,
             text_key="sign_in",
+            click_sound_path=config.BUTTON_CLICK_SOUND,
             callback=self.on_login,
             localizer=self.loc
         )
@@ -73,6 +74,7 @@ class MenuScreen(Screen):
             font=self.font,
             text_color=config.COLOR_BLACK,
             text_key="match_pairs",
+            click_sound_path=config.BUTTON_CLICK_SOUND,
             callback=self.on_match_pairs,
             localizer=self.loc
         )
@@ -101,6 +103,7 @@ class MenuScreen(Screen):
             font=self.font,
             text_color=config.COLOR_BLACK,
             text_key="settings",
+            click_sound_path=config.BUTTON_CLICK_SOUND,
             callback=self.on_settings,
             localizer=self.loc
         )
@@ -115,6 +118,7 @@ class MenuScreen(Screen):
             font=self.font,
             text_color=config.COLOR_BLACK,
             text_key="exit",
+            click_sound_path=config.BUTTON_CLICK_SOUND,
             callback=self.on_exit,
             localizer=self.loc
         )

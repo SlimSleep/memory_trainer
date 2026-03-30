@@ -60,6 +60,7 @@ class LoginScreen(Screen):
             height=config.BUTTON_HEIGHT,
             font=self.font,
             text_key='sign_in',
+            click_sound_path=config.BUTTON_CLICK_SOUND,
             localizer=self.loc,
             callback=self.try_login
         )
@@ -71,6 +72,7 @@ class LoginScreen(Screen):
             height=config.BUTTON_HEIGHT,
             font=self.font,
             text_key='back',
+            click_sound_path=config.BUTTON_CLICK_SOUND,
             localizer=self.loc,
             callback=self.go_back
         )
