@@ -1,40 +1,25 @@
 """
 Экран главного меню приложения.
-Демонстрирует использование UI элементов (Button, Label, Slider).
 """
 
 import pygame
 from modules.ui.screen import Screen
 from modules.ui.button import Button
 from modules.ui.label import Label
-from modules.ui.slider import Slider
-from modules.database.db_manager import DatabaseManager
 import config
 
 
 class MenuScreen(Screen):
-    """
-    Главное меню с кнопками для запуска игр, настроек и выхода.
-    """
+    """Главное меню с кнопками для запуска игр, настроек и выхода."""
     
     def __init__(self, manager, localizer, font_normal, font_large):
-        """
-        Инициализация экрана меню.
-        
-        :param manager: ScreenManager
-        :param localizer: Localizer для локализации
-        :param font_normal: шрифт для обычного текста
-        :param font_large: шрифт для заголовка
-        """
         super().__init__(manager, localizer, font_normal)
         self.font_large = font_large
         self.bg_color = config.COLOR_BG
         
-        # Создаём элементы UI
         self.title = None
+        self.user_label = None
         self.buttons = []
-        self.language_slider = None
-        self.language_label = None
         
         self.create_ui()
 
@@ -54,19 +39,10 @@ class MenuScreen(Screen):
             localizer=self.loc
         )
 
+        # Метка пользователя
         self.user_label = Label(
             x=screen_width // 2,
-            y=130,
-            text_key=None,
-            font=self.font,
-            color=config.COLOR_BLACK,
-            center=True,
-            localizer=None
-        )
-
-        self.user_label = Label(
-            x=screen_width // 2,
-            y=130,
+            y=150,
             text_key=None,
             font=self.font,
             color=config.COLOR_BLACK,
@@ -75,9 +51,9 @@ class MenuScreen(Screen):
         )
         
         # Кнопка "Вход / регистрация"
-        start_btn = Button(
+        login_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=200,
+            y=220,
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -86,12 +62,12 @@ class MenuScreen(Screen):
             callback=self.on_login,
             localizer=self.loc
         )
-        self.buttons.append(start_btn)
+        self.buttons.append(login_btn)
         
         # Кнопка "Найди пару"
         match_pairs_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=200 + config.BUTTON_HEIGHT + config.BUTTON_SPACING,
+            y=220 + config.BUTTON_HEIGHT + config.BUTTON_SPACING,
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -102,10 +78,24 @@ class MenuScreen(Screen):
         )
         self.buttons.append(match_pairs_btn)
         
+        # Кнопка "Запомни последовательность"
+        sequence_btn = Button(
+            x=screen_width // 2 - config.BUTTON_WIDTH // 2,
+            y=220 + 2 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
+            width=config.BUTTON_WIDTH,
+            height=config.BUTTON_HEIGHT,
+            font=self.font,
+            text_color=config.COLOR_BLACK,
+            text_key="sequence",
+            callback=self.on_sequence,
+            localizer=self.loc
+        )
+        self.buttons.append(sequence_btn)
+        
         # Кнопка "Настройки"
         settings_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=200 + 2 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
+            y=220 + 3 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -119,7 +109,7 @@ class MenuScreen(Screen):
         # Кнопка "Выход"
         exit_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=200 + 3 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
+            y=220 + 4 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -129,74 +119,40 @@ class MenuScreen(Screen):
             localizer=self.loc
         )
         self.buttons.append(exit_btn)
-        
-        # Слайдер для выбора языка (в нижней части)
-        lang_y = screen_height - 100
-        self.language_label = Label(
-            x=50,
-            y=lang_y,
-            text_key="language",
-            font=self.font,
-            color=config.COLOR_BLACK,
-            center=False,
-            localizer=self.loc
-        )
-        
-        # Слайдер для переключения языка (0 = русский, 1 = английский)
-        self.language_slider = Slider(
-            x=200,
-            y=lang_y + 5,
-            width=150,
-            height=30,
-            min_val=0,
-            max_val=1,
-            initial_val=0 if self.loc.get_lang() == 'ru' else 1,
-            callback=self.on_language_change
-        )
 
     def on_login(self):
-        """Обработчик кнопки 'Вход / регистрация'"""
+        """Обработчик кнопки 'Вход / регистрация'."""
         print("➜ Нажата кнопка 'Вход / регистрация'")
         self.manager.set_screen("login")
 
     def on_match_pairs(self):
-        """Обработчик кнопки 'Найди пару'"""
+        """Обработчик кнопки 'Найди пару'."""
         print("➜ Нажата кнопка 'Найди пару'")
         self.manager.set_screen("match_pairs")
 
+    def on_sequence(self):
+        """Обработчик кнопки 'Запомни последовательность'."""
+        print("➜ Нажата кнопка 'Запомни последовательность'")
+        self.manager.set_screen("sequence")
+
     def on_settings(self):
-        """Обработчик кнопки 'Настройки'"""
+        """Обработчик кнопки 'Настройки'."""
         print("➜ Нажата кнопка 'Настройки'")
         self.manager.set_screen("settings")
 
     def on_exit(self):
-        """Обработчик кнопки 'Выход'"""
+        """Обработчик кнопки 'Выход'."""
         print("➜ Нажата кнопка 'Выход'")
         pygame.event.post(pygame.event.Event(pygame.QUIT))
-
-    def on_language_change(self, value):
-        """
-        Обработчик изменения языка через слайдер.
-        
-        :param value: значение слайдера (0 или 1)
-        """
-        lang = 'ru' if value < 0.5 else 'en'
-        self.loc.switch_lang(lang)
-        print(f"➜ Язык изменён на: {lang}")
 
     def on_enter(self):
         """Вызывается при входе на экран."""
         print("✓ Вход на экран меню")
 
-    def on_exit_screen(self):
-        """Вызывается при выходе с экрана."""
-        print("✓ Выход с экрана меню")
-
     def handle_event(self, event):
         """Обрабатывает события."""
         for btn in self.buttons:
             btn.handle_event(event)
-        self.language_slider.handle_event(event)
 
     def update(self):
         """Обновляет логику экрана каждый кадр."""
@@ -204,32 +160,27 @@ class MenuScreen(Screen):
 
     def draw(self, screen):
         """Отрисовывает содержимое экрана."""
-        # Фон
         screen.fill(self.bg_color)
         
         # Заголовок
         self.title.draw(screen)
 
-        if self.manager.context.get('current_user'):
-            user = self.manager.context['current_user']
-            self.user_label.text = f"{self.loc.get('user')}: {user.username}"
-            self.user_label._update_surface()
-            self.user_label.draw(screen)
+        # Информация о пользователе
+        current_user = self.manager.context.get('current_user')
+        if current_user:
+            self.user_label.text = f"{self.loc.get('user')}: {current_user.username}"
         else:
             self.user_label.text = self.loc.get('not_logged_in')
-            self.user_label._update_surface()
-            self.user_label.draw(screen)
+        
+        self.user_label._update_surface()
+        self.user_label.draw(screen)
 
         # Кнопки
         for btn in self.buttons:
             btn.draw(screen)
         
-        # Слайдер языка
-        self.language_label.draw(screen)
-        self.language_slider.draw(screen)
-        
-        # Текст справки внизу экрана
-        help_text = "Demo UI System • Try clicking buttons or adjusting language slider"
+        # Подсказка внизу экрана
+        help_text = "Memory Trainer v1.0 • Use menu buttons to play"
         help_font = pygame.font.Font(None, 20)
         help_color = (150, 150, 150)
         help_surf = help_font.render(help_text, True, help_color)
