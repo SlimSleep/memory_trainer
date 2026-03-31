@@ -189,10 +189,15 @@ class MatchPairsScreen(Screen):
                     pygame.draw.rect(screen, config.COLOR_GRAY, display_rect, 2)
                 elif self.game.previewing or card['revealed'] or card['matched']:
                     pygame.draw.rect(screen, card['color'], display_rect)
+                    if card.get('sprite'):
+                        sprite = card['sprite']
+                        sprite_rect = sprite.get_rect(center=display_rect.center)
+                        screen.blit(sprite, sprite_rect)
+                    else:
+                        label = self.font_small.render(str(card['pair_id']), True, config.COLOR_BLACK)
+                        label_rect = label.get_rect(center=display_rect.center)
+                        screen.blit(label, label_rect)
                     pygame.draw.rect(screen, config.COLOR_BLACK, display_rect, 2)
-                    label = self.font_small.render(str(card['pair_id']), True, config.COLOR_BLACK)
-                    label_rect = label.get_rect(center=display_rect.center)
-                    screen.blit(label, label_rect)
                 else:
                     pygame.draw.rect(screen, config.COLOR_GRAY_DARK, display_rect)
                     pygame.draw.rect(screen, config.COLOR_GRAY, display_rect, 2)

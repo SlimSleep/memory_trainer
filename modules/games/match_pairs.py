@@ -1,3 +1,4 @@
+import os
 import random
 import pygame
 import config
@@ -7,18 +8,7 @@ class MatchPairsGame:
     """Логика игры "Найди пару" без визуальной реализации."""
 
     CARD_PADDING = 10
-    PAIR_COLORS = [
-        (255, 179, 186),
-        (255, 223, 186),
-        (255, 255, 186),
-        (186, 255, 201),
-        (186, 225, 255),
-        (201, 186, 255),
-        (255, 186, 255),
-        (186, 255, 255),
-        (255, 210, 218),
-        (210, 255, 214),
-    ]
+    SPRITE_SURFACES = None
 
     def __init__(self, level: int = 1, board_rect: pygame.Rect = None):
         self.level = level
@@ -49,7 +39,27 @@ class MatchPairsGame:
         self.animation_done = False
         self.previewing = False
 
+        self.card_sprites = self._load_card_sprites()
         self._create_cards()
+
+    def _load_card_sprites(self):
+        """Load PNG card sprites from the assets/images folder."""
+        if MatchPairsGame.SPRITE_SURFACES is not None:
+            return MatchPairsGame.SPRITE_SURFACES
+
+        sprites = []
+        if os.path.isdir(config.IMAGES_DIR):
+            for filename in sorted(os.listdir(config.IMAGES_DIR)):
+                if filename.lower().endswith('.png'):
+                    path = os.path.join(config.IMAGES_DIR, filename)
+                    try:
+                        sprite = pygame.image.load(path).convert_alpha()
+                        sprites.append(sprite)
+                    except (pygame.error, FileNotFoundError) as e:
+                        print(f"⚠ Не удалось загрузить спрайт карточки {path}: {e}")
+
+        MatchPairsGame.SPRITE_SURFACES = sprites
+        return sprites
 
     def _create_cards(self):
         deck = [pair_id for pair_id in range(self.pair_count) for _ in range(2)]
@@ -83,13 +93,20 @@ class MatchPairsGame:
                     card_size,
                     card_size
                 )
+                sprite_surface = None
+                if self.card_sprites:
+                    base_sprite = self.card_sprites[pair_id % len(self.card_sprites)]
+                    if base_sprite:
+                        sprite_surface = pygame.transform.smoothscale(base_sprite, (card_size, card_size))
+
                 self.cards.append({
                     'pair_id': pair_id + 1,
                     'rect': rect,
                     'current_rect': start_rect.copy(),
                     'revealed': False,
                     'matched': False,
-                    'color': self.PAIR_COLORS[pair_id % len(self.PAIR_COLORS)]
+                    'color': random.choice(config.MATCH_PAIRS_COLORS),
+                    'sprite': sprite_surface
                 })
 
     def get_card_index_at(self, pos):
