@@ -77,6 +77,11 @@ class MatchPairsGame:
         self.cards = []
         center_x = self.board_rect.centerx
         center_y = self.board_rect.centery
+        pair_colors = {
+            pair_id: random.choice(config.MATCH_PAIRS_COLORS)
+            for pair_id in range(self.pair_count)
+        }
+
         for row in range(self.rows):
             for col in range(self.cols):
                 index = row * self.cols + col
@@ -105,7 +110,7 @@ class MatchPairsGame:
                     'current_rect': start_rect.copy(),
                     'revealed': False,
                     'matched': False,
-                    'color': random.choice(config.MATCH_PAIRS_COLORS),
+                    'color': pair_colors[pair_id],
                     'sprite': sprite_surface
                 })
 
