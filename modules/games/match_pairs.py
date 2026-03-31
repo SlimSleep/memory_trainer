@@ -77,8 +77,25 @@ class MatchPairsGame:
         self.cards = []
         center_x = self.board_rect.centerx
         center_y = self.board_rect.centery
-        pair_colors = {
-            pair_id: random.choice(config.MATCH_PAIRS_COLORS)
+
+        available_colors = list(config.MATCH_PAIRS_COLORS)
+        sprite_indices = list(range(len(self.card_sprites))) if self.card_sprites else [None]
+        all_combinations = [
+            (sprite_index, color)
+            for sprite_index in sprite_indices
+            for color in available_colors
+        ]
+        if len(all_combinations) >= self.pair_count:
+            selected_combinations = random.sample(all_combinations, self.pair_count)
+        else:
+            selected_combinations = all_combinations[:]
+            while len(selected_combinations) < self.pair_count:
+                selected_combinations.extend(all_combinations)
+            random.shuffle(selected_combinations)
+            selected_combinations = selected_combinations[:self.pair_count]
+
+        pair_styles = {
+            pair_id: selected_combinations[pair_id]
             for pair_id in range(self.pair_count)
         }
 
@@ -99,8 +116,9 @@ class MatchPairsGame:
                     card_size
                 )
                 sprite_surface = None
-                if self.card_sprites:
-                    base_sprite = self.card_sprites[pair_id % len(self.card_sprites)]
+                sprite_index, card_color = pair_styles[pair_id]
+                if sprite_index is not None and self.card_sprites:
+                    base_sprite = self.card_sprites[sprite_index]
                     if base_sprite:
                         sprite_surface = pygame.transform.smoothscale(base_sprite, (card_size, card_size))
 
@@ -110,7 +128,7 @@ class MatchPairsGame:
                     'current_rect': start_rect.copy(),
                     'revealed': False,
                     'matched': False,
-                    'color': pair_colors[pair_id],
+                    'color': card_color,
                     'sprite': sprite_surface
                 })
 
