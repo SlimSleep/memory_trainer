@@ -111,3 +111,9 @@ MATCH_PAIRS_LEVELS = {
 SEQUENCE_START_LENGTH = 3
 SEQUENCE_MAX_LENGTH = 20
 SEQUENCE_BUTTON_COUNT = 4
+# ============================================================================
+# SEQUENCE - ЗВУКИ
+# ============================================================================
+SEQUENCE_CORRECT_SOUND = os.path.join(SOUNDS_DIR, 'Correct.wav')
+SEQUENCE_WRONG_SOUND = os.path.join(SOUNDS_DIR, 'Wrong.wav')
+SEQUENCE_BUTTON_SOUND = os.path.join(SOUNDS_DIR, 'cards_Match_pairs.mp3')
