@@ -168,6 +168,7 @@ class SettingsScreen(Screen):
     def on_difficulty_change(self, value):
         level = int(round(value))
         self.manager.context['match_pairs_level'] = level
+        self.manager.context['sequence_level'] = level
         self.difficulty_value.text = str(level)
         self.difficulty_value._update_surface()
         self.status_label.text = self.loc.get('difficulty') + f": {level}"
