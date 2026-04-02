@@ -144,6 +144,8 @@ class SequenceScreen(Screen):
         self.game = SequenceGame(level=level)
         self.game.set_buttons_rect(self.button_rects)
         self.status_label.text = self.loc.get('watch_sequence')
+        self.status_label._update_surface()
+        self.button_hover = [False, False, False, False]
     
     def on_back(self):
         """Возврат в меню."""
@@ -158,10 +160,14 @@ class SequenceScreen(Screen):
         self.back_button.handle_event(event)
         self.restart_button.handle_event(event)
         
-        # Обновление hover состояний
+        # Обновление hover состояний (только если ход игрока)
         if event.type == pygame.MOUSEMOTION:
-            for i, rect in enumerate(self.button_rects):
-                self.button_hover[i] = rect.collidepoint(event.pos)
+            if self.game and self.game.is_player_turn():
+                for i, rect in enumerate(self.button_rects):
+                    self.button_hover[i] = rect.collidepoint(event.pos)
+            else:
+                # Сбрасываем подсветку во время показа последовательности
+                self.button_hover = [False, False, False, False]
         
         # Обработка кликов по игровым кнопкам
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -184,6 +190,10 @@ class SequenceScreen(Screen):
         current_time = pygame.time.get_ticks()
         self.game.update(current_time)
         
+        # Сброс hover при начале нового раунда (когда игра переключается на preview)
+        if self.game.game_state == 'preview' and any(self.button_hover):
+            self.button_hover = [False, False, False, False]
+        
         # Обновление информационных меток
         self.score_label.text = f"{self.loc.get('score')}: {self.game.get_score()}"
         self.level_label.text = f"{self.loc.get('level')}: {self.game.get_sequence_length()}"
@@ -193,15 +203,17 @@ class SequenceScreen(Screen):
         self.level_label._update_surface()
         self.mistakes_label._update_surface()
         
-        # Обновление статуса хода
-        if self.game.is_player_turn() and not self.status_label.text:
-            self.status_label.text = self.loc.get('your_turn')
-            self.status_label._update_surface()
-        elif self.game.game_state == 'preview' and self.status_label.text != self.loc.get('watch_sequence'):
-            self.status_label.text = self.loc.get('watch_sequence')
-            self.status_label._update_surface()
+        # Обновление статуса хода (ИСПРАВЛЕНО)
+        if self.game.is_player_turn():
+            if self.status_label.text != self.loc.get('your_turn'):
+                self.status_label.text = self.loc.get('your_turn')
+                self.status_label._update_surface()
+        elif self.game.game_state == 'preview':
+            if self.status_label.text != self.loc.get('watch_sequence'):
+                self.status_label.text = self.loc.get('watch_sequence')
+                self.status_label._update_surface()
         
-        # Сохранение результатов при победе (если последовательность достигла максимума)
+        # Сохранение результатов при победе
         if not self.saved and self.game.is_completed():
             self._save_results()
     
@@ -224,13 +236,12 @@ class SequenceScreen(Screen):
         
         if current_user:
             db = DatabaseManager(config.DB_PATH)
-            # Длительность не отслеживаем в Sequence, используем фиктивное значение
             session = GameSession(
                 user_id=current_user.id,
                 game_type='sequence',
                 score=score,
                 level=level,
-                duration=sequence_length * 2  # Примерное время
+                duration=sequence_length * 2
             )
             try:
                 db.save_game_session(session)
@@ -244,7 +255,7 @@ class SequenceScreen(Screen):
         self.saved = True
     
     def draw(self, screen):
-        """Отрисовывает экран."""
+        """Отрисовывает экран с карточками и спрайтами."""
         screen.fill(self.bg_color)
         
         # Заголовок
@@ -255,11 +266,27 @@ class SequenceScreen(Screen):
         self.level_label.draw(screen)
         self.mistakes_label.draw(screen)
         
-        # Игровые кнопки
+        # Игровые кнопки с картинками и цветным фоном
         if self.game:
             for i, rect in enumerate(self.button_rects):
-                color = self.game.get_button_color(i, self.button_hover[i])
-                pygame.draw.rect(screen, color, rect)
+                # Получаем цвет фона (активный/неактивный/наведение)
+                bg_color = self.game.get_button_color(i, self.button_hover[i])
+                
+                # Рисуем цветной фон
+                pygame.draw.rect(screen, bg_color, rect)
+                
+                # Рисуем спрайт поверх фона
+                sprite = self.game.get_button_sprite(i)
+                if sprite:
+                    # Масштабируем спрайт под размер кнопки с отступом 10px
+                    padding = 10
+                    sprite_size = min(rect.width - padding * 2, rect.height - padding * 2)
+                    if sprite_size > 0:
+                        scaled_sprite = pygame.transform.smoothscale(sprite, (sprite_size, sprite_size))
+                        sprite_rect = scaled_sprite.get_rect(center=rect.center)
+                        screen.blit(scaled_sprite, sprite_rect)
+                
+                # Рисуем рамку
                 pygame.draw.rect(screen, config.COLOR_BLACK, rect, 3)
         
         # Сообщение о завершении
