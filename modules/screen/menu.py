@@ -94,10 +94,24 @@ class MenuScreen(Screen):
         )
         self.buttons.append(sequence_btn)
         
+        # Кнопка "Повтори цифры"
+        digits_btn = Button(
+            x=screen_width // 2 - config.BUTTON_WIDTH // 2,
+            y=220 + 3 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
+            width=config.BUTTON_WIDTH,
+            height=config.BUTTON_HEIGHT,
+            font=self.font,
+            text_color=config.COLOR_BLACK,
+            text_key="digits",
+            callback=self.on_digits,
+            localizer=self.loc
+        )
+        self.buttons.append(digits_btn)
+        
         # Кнопка "Настройки"
         settings_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=220 + 3 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
+            y=220 + 4 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -112,7 +126,7 @@ class MenuScreen(Screen):
         # Кнопка "Выход"
         exit_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=220 + 4 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
+            y=220 + 5 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -138,6 +152,11 @@ class MenuScreen(Screen):
         """Обработчик кнопки 'Запомни последовательность'."""
         print("➜ Нажата кнопка 'Запомни последовательность'")
         self.manager.set_screen("sequence")
+
+    def on_digits(self):
+        """Обработчик кнопки 'Повтори цифры'."""
+        print("➜ Нажата кнопка 'Повтори цифры'")
+        self.manager.set_screen("digits")
 
     def on_settings(self):
         """Обработчик кнопки 'Настройки'."""

@@ -15,6 +15,7 @@ from modules.screen.login import LoginScreen
 from modules.screen.settings import SettingsScreen
 from modules.screen.match_pairs import MatchPairsScreen
 from modules.screen.sequence import SequenceScreen
+from modules.games.digits import DigitsGame
 from modules.database.db_manager import DatabaseManager
 
 
@@ -58,12 +59,16 @@ def main():
     login_screen = LoginScreen(screen_manager, localizer, font_normal, font_small)
     match_pairs_screen = MatchPairsScreen(screen_manager, localizer, font_normal, font_small, font_large)
     sequence_screen = SequenceScreen(screen_manager, localizer, font_normal, font_small, font_large)
+    digits_game = DigitsGame(screen_manager, localizer, font_normal, font_large, 
+                             font_huge=pygame.font.Font(None, 200),
+                             level=3, speed=1.0, max_attempts=3, sound_manager=audio)
     settings_screen = SettingsScreen(screen_manager, localizer, font_normal, font_small)
     
     screen_manager.add_screen("menu", menu_screen)
     screen_manager.add_screen("login", login_screen)
     screen_manager.add_screen("match_pairs", match_pairs_screen)
     screen_manager.add_screen("sequence", sequence_screen)
+    screen_manager.add_screen("digits", digits_game)
     screen_manager.add_screen("settings", settings_screen)
 
     # Попытка загрузить сессию из файла
@@ -87,7 +92,7 @@ def main():
     print("\n" + "="*60)
     print("🎮 ТРЕНАЖЁР ПАМЯТИ - ЗАПУЩЕН")
     print("="*60)
-    print("• Доступные игры: Найди пару, Запомни последовательность")
+    print("• Доступные игры: Найди пару, Запомни последовательность, Повтори цифры")
     print("• Используйте слайдер в настройках для смены языка")
     print("• Нажмите 'Выход' или закройте окно для завершения")
     print("="*60 + "\n")

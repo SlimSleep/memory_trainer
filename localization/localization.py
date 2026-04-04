@@ -30,6 +30,13 @@ FALLBACK_STRINGS = {
         "language": "Язык",
         "english": "English",
         "russian": "Русский",
+        "demo_ready": "Запомните последовательность",
+        "input_prompt": "Введите цифру {current} из {total}",
+        "win_message": "Поздравляем! Вы справились!",
+        "lose_message": "Не расстраивайтесь. Правильная последовательность: {sequence}",
+        "try_again": "Сыграть ещё",
+        "change_level": "Сменить уровень",
+        "next": "Далее",
     },
     'en': {
         "menu_title": "Memory Trainer",
@@ -55,6 +62,13 @@ FALLBACK_STRINGS = {
         "language": "Language",
         "english": "English",
         "russian": "Russian",
+        "demo_ready": "Remember the sequence",
+        "input_prompt": "Enter digit {current} of {total}",
+        "win_message": "Congratulations! You made it!",
+        "lose_message": "Never mind. The correct sequence was: {sequence}",
+        "try_again": "Try Again",
+        "change_level": "Change Level",
+        "next": "Next",
     }
 }
 

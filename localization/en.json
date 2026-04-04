@@ -40,5 +40,12 @@
   "hard": "Hard",
   "your_turn": "Your turn! Repeat the sequence",
   "watch_sequence": "Watch the sequence...",
-  "mistakes": "Mistakes"
+  "mistakes": "Mistakes",
+  "demo_ready": "Remember the sequence",
+  "input_prompt": "Enter digit {current} of {total}",
+  "win_message": "Congratulations! You made it!",
+  "lose_message": "Never mind. The correct sequence was: {sequence}",
+  "try_again": "Try Again",
+  "change_level": "Change Level",
+  "next": "Next"
 }
