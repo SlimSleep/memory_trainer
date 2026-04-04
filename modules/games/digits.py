@@ -397,14 +397,17 @@ class DigitsGame(Screen):
             digit = self.sequence[self.current_digit_index]
             digit_text = str(digit)
             digit_surf = self.font_huge.render(digit_text, True, self.demo_text_color)
-            digit_rect = digit_surf.get_rect(center=screen.get_rect().center)
+            digit_rect = digit_surf.get_rect()
+            digit_rect.center = (screen.get_width() // 2, screen.get_height() // 2)
             screen.blit(digit_surf, digit_rect)
         
         # Показываем подсказку внизу
         hint_text = self.loc.get('demo_ready')
         hint_font = pygame.font.Font(None, 36)
         hint_surf = hint_font.render(hint_text, True, self.demo_text_color)
-        hint_rect = hint_surf.get_rect(bottomcenter=(screen.get_width() // 2, screen.get_height() - 30))
+        hint_rect = hint_surf.get_rect()
+        hint_rect.centerx = screen.get_width() // 2
+        hint_rect.bottom = screen.get_height() - 30
         screen.blit(hint_surf, hint_rect)
     
     def _draw_input(self, screen):
@@ -416,7 +419,9 @@ class DigitsGame(Screen):
         # Заголовок
         title_text = self.loc.get('digits')
         title_surf = self.font_large.render(title_text, True, config.COLOR_BLACK)
-        title_rect = title_surf.get_rect(midtop=(screen.get_width() // 2, 50))
+        title_rect = title_surf.get_rect()
+        title_rect.centerx = screen.get_width() // 2
+        title_rect.top = 50
         screen.blit(title_surf, title_rect)
         
         # Подсказка с текущим прогрессом
@@ -425,14 +430,17 @@ class DigitsGame(Screen):
             total=len(self.sequence)
         )
         prompt_surf = self.font.render(prompt_text, True, config.COLOR_BLACK)
-        prompt_rect = prompt_surf.get_rect(midtop=(screen.get_width() // 2, 150))
+        prompt_rect = prompt_surf.get_rect()
+        prompt_rect.centerx = screen.get_width() // 2
+        prompt_rect.top = 150
         screen.blit(prompt_surf, prompt_rect)
         
         # Крупное отображение текущей введённой цифры (если есть)
         if self.user_input:
             last_digit = str(self.user_input[-1])
             digit_surf = self.font_huge.render(last_digit, True, config.COLOR_BLUE)
-            digit_rect = digit_surf.get_rect(center=(screen.get_width() // 2, 350))
+            digit_rect = digit_surf.get_rect()
+            digit_rect.center = (screen.get_width() // 2, 350)
             screen.blit(digit_surf, digit_rect)
         
         # Прогресс-бар
@@ -441,14 +449,18 @@ class DigitsGame(Screen):
         # Попытки
         attempts_text = f"{self.loc.get('mistakes')}: {self.max_attempts - self.attempts_left}/{self.max_attempts}"
         attempts_surf = self.font.render(attempts_text, True, config.COLOR_RED)
-        attempts_rect = attempts_surf.get_rect(midtop=(screen.get_width() // 2, 550))
+        attempts_rect = attempts_surf.get_rect()
+        attempts_rect.centerx = screen.get_width() // 2
+        attempts_rect.top = 550
         screen.blit(attempts_surf, attempts_rect)
         
         # Подсказка внизу
         hint_text = f"Нажимайте цифры 0-9, Enter для подтверждения, Backspace для удаления, Escape для выхода"
         hint_font = pygame.font.Font(None, 18)
         hint_surf = hint_font.render(hint_text, True, config.COLOR_GRAY_DARK)
-        hint_rect = hint_surf.get_rect(bottomcenter=(screen.get_width() // 2, screen.get_height() - 10))
+        hint_rect = hint_surf.get_rect()
+        hint_rect.centerx = screen.get_width() // 2
+        hint_rect.bottom = screen.get_height() - 10
         screen.blit(hint_surf, hint_rect)
     
     def _draw_progress_bar(self, screen, current: int, total: int):
@@ -479,7 +491,8 @@ class DigitsGame(Screen):
         progress_text = f"{current}/{total}"
         progress_font = pygame.font.Font(None, 20)
         progress_surf = progress_font.render(progress_text, True, config.COLOR_BLACK)
-        progress_rect = progress_surf.get_rect(center=(bar_x + bar_width // 2, bar_y + bar_height // 2))
+        progress_rect = progress_surf.get_rect()
+        progress_rect.center = (bar_x + bar_width // 2, bar_y + bar_height // 2)
         screen.blit(progress_surf, progress_rect)
     
     def _draw_result(self, screen, is_win: bool):
