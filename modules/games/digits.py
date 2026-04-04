@@ -85,9 +85,6 @@ class DigitsGame(Screen):
         self.game_start_time = 0            # Время начала демонстрации
         self.game_end_time = 0              # Время окончания игры
         
-        # Прогресс
-        self.games_won = 0                  # Количество выигранных игр подряд
-        
         # Визуальные элементы для экрана результатов
         self.result_title = Label(
             x=manager.screen.get_width() // 2,
@@ -339,19 +336,16 @@ class DigitsGame(Screen):
         if self.user_input == self.sequence:
             self.state = STATE_WIN
             self.game_end_time = pygame.time.get_ticks()
-            self.games_won += 1
             self._play_sound('win')
-            print(f"✓ Победа! Последовательность введена правильно. Уровень: {self.level}, Побед подряд: {self.games_won}")
+            print(f"✓ Победа! Последовательность введена правильно. Уровень: {self.level}")
             
-            # Автоматическое увеличение уровня каждые 3 победы
-            if self.games_won % 3 == 0:
-                self.level += 1
-                print(f"🎉 Уровень повышен до {self.level}!")
+            # Автоматическое увеличение уровня после каждой победы
+            self.level += 1
+            print(f"🎉 Уровень повышен до {self.level}!")
         else:
             # Это не должно случиться, так как мы проверяем в _input_digit
             self.state = STATE_LOSE
             self.game_end_time = pygame.time.get_ticks()
-            self.games_won = 0  # Сброс прогресса при поражении
             self._play_sound('lose')
             print(f"✗ Поражение.")
     
@@ -570,8 +564,9 @@ class DigitsGame(Screen):
         # Детали результата
         elapsed = max(0, (self.game_end_time - self.game_start_time) // 1000)
         difficulty_names = {1: self.loc.get('easy'), 2: self.loc.get('medium'), 3: self.loc.get('hard')}
+        level_up_text = " 🎉" if self.state == STATE_WIN else ""
         self.result_details.text = (
-            f"{self.loc.get('level')}: {self.level} | "
+            f"{self.loc.get('level')}: {self.level}{level_up_text} | "
             f"{self.loc.get('difficulty')}: {difficulty_names.get(self.difficulty, str(self.difficulty))} | "
             f"{self.loc.get('time')}: {elapsed}с | "
             f"{self.loc.get('score')}: {len(self.sequence) * 10}"
@@ -592,11 +587,10 @@ class DigitsGame(Screen):
         # Загружаем сохранённый прогресс
         self.level = self.manager.context.get('digits_level', 1)
         self.difficulty = self.manager.context.get('digits_difficulty', 1)
-        self.games_won = self.manager.context.get('digits_games_won', 0)
         self._update_difficulty_params()
         
         self.start_game()
-        print(f"✓ Вход на экран игры 'Повтори цифры'. Уровень: {self.level}, Сложность: {self.difficulty}, Побед подряд: {self.games_won}")
+        print(f"✓ Вход на экран игры 'Повтори цифры'. Уровень: {self.level}, Сложность: {self.difficulty}")
     
     def on_try_again(self):
         """Кнопка 'Сыграть ещё': перезапуск с текущим уровнем."""
@@ -607,7 +601,6 @@ class DigitsGame(Screen):
         # Сохраняем текущий прогресс
         self.manager.context['digits_level'] = self.level
         self.manager.context['digits_difficulty'] = self.difficulty
-        self.manager.context['digits_games_won'] = self.games_won
         self.manager.set_screen('settings')
     
     def on_menu(self):
@@ -615,7 +608,6 @@ class DigitsGame(Screen):
         # Сохраняем текущий прогресс
         self.manager.context['digits_level'] = self.level
         self.manager.context['digits_difficulty'] = self.difficulty
-        self.manager.context['digits_games_won'] = self.games_won
         self.manager.set_screen('menu')
     
     def on_exit(self):
@@ -645,7 +637,6 @@ class DigitsGame(Screen):
             'time_seconds': elapsed,
             'level': self.level,
             'difficulty': self.difficulty,
-            'games_won_streak': self.games_won,
             'score': len(self.sequence) * 10 if self.state == STATE_WIN else 0,
             'sequence': self.sequence,
             'user_input': self.user_input,
