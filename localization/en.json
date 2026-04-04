@@ -47,5 +47,6 @@
   "lose_message": "Never mind. The correct sequence was: {sequence}",
   "try_again": "Try Again",
   "change_level": "Change Level",
-  "next": "Next"
+  "next": "Next",
+  "menu": "Menu"
 }

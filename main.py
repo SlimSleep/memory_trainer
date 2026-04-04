@@ -61,7 +61,7 @@ def main():
     sequence_screen = SequenceScreen(screen_manager, localizer, font_normal, font_small, font_large)
     digits_game = DigitsGame(screen_manager, localizer, font_normal, font_large, 
                              font_huge=pygame.font.Font(None, 200),
-                             level=3, speed=1.0, max_attempts=3, sound_manager=audio)
+                             level=1, difficulty=1, sound_manager=audio)
     settings_screen = SettingsScreen(screen_manager, localizer, font_normal, font_small)
     
     screen_manager.add_screen("menu", menu_screen)

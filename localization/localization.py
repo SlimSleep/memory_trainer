@@ -37,6 +37,7 @@ FALLBACK_STRINGS = {
         "try_again": "Сыграть ещё",
         "change_level": "Сменить уровень",
         "next": "Далее",
+        "menu": "Меню",
     },
     'en': {
         "menu_title": "Memory Trainer",
@@ -69,6 +70,7 @@ FALLBACK_STRINGS = {
         "try_again": "Try Again",
         "change_level": "Change Level",
         "next": "Next",
+        "menu": "Menu",
     }
 }
 
