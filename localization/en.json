@@ -10,6 +10,7 @@
   "score": "Score",
   "time": "Time",
   "level": "Level",
+  "round": "Round",
   "pause": "Pause",
   "resume": "Resume",
   "restart": "Restart",
@@ -48,6 +49,5 @@
   "try_again": "Try Again",
   "change_level": "Change Level",
   "next": "Next",
-  "menu": "Menu",
-  "total_score": "Total score"
+  "menu": "Menu"
 }
