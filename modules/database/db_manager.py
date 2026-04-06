@@ -19,6 +19,25 @@ class DatabaseManager:
     
     _instance = None
     
+    def get_user_total_score(self, user_id: int) -> int:
+        """
+        Возвращает суммарное количество баллов пользователя по всем играм.
+        
+        :param user_id: ID пользователя
+        :return: общая сумма очков
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT COALESCE(SUM(score), 0) as total_score
+            FROM game_sessions
+            WHERE user_id = ?
+        ''', (user_id,))
+        
+        row = cursor.fetchone()
+        return row['total_score'] if row else 0
+
     def __new__(cls, db_path: str = "data/users.db"):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
