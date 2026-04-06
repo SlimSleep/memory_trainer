@@ -19,6 +19,8 @@ import config
 from modules.ui.screen import Screen
 from modules.ui.button import Button
 from modules.ui.label import Label
+from modules.database.db_manager import DatabaseManager
+from modules.database.models import GameSession
 
 
 # Состояния игры
@@ -84,6 +86,9 @@ class DigitsGame(Screen):
         # Время игры
         self.game_start_time = 0            # Время начала демонстрации
         self.game_end_time = 0              # Время окончания игры
+        
+        # Флаг сохранения
+        self.saved = False
         
         # Визуальные элементы для экрана результатов
         self.result_title = Label(
@@ -172,7 +177,6 @@ class DigitsGame(Screen):
     
     def _update_button_texts(self):
         """Обновляет текст кнопок при смене языка."""
-        # Принудительно обновляем текст кнопок
         self.btn_try_again.set_text('try_again')
         self.btn_change_level.set_text('change_level')
         self.btn_menu.set_text('menu')
@@ -184,7 +188,6 @@ class DigitsGame(Screen):
         Сложность влияет на:
         - Время показа каждой цифры (speed)
         - Максимум ошибок (max_attempts)
-        - Пауза между цифрами (DIGIT_PAUSE_MS)
         """
         if self.difficulty == 1:
             # Лёгкая сложность
@@ -203,29 +206,12 @@ class DigitsGame(Screen):
         """
         Генерирует случайную последовательность цифр.
         
-        Для уровня 1 (лёгкий) — цифры уникальны.
-        Для уровня 2 (средний) — цифры могут повторяться.
-        Для уровня 3 (сложный) — цифры обязательно повторяются.
-        
         Длина последовательности = self.level
         
         :return: список цифр (0-9)
         """
         length = self.level
-        
-        if self.difficulty == 1:
-            # Лёгкая: уникальные цифры (если возможно)
-            if length <= 10:
-                return random.sample(range(10), length)
-            else:
-                # Если длина > 10, повторяем цифры
-                return [random.randint(0, 9) for _ in range(length)]
-        elif self.difficulty == 2:
-            # Средняя: могут повторяться
-            return [random.randint(0, 9) for _ in range(length)]
-        else:  # difficulty == 3
-            # Сложная: повторяющиеся цифры более вероятны
-            return [random.randint(0, 9) for _ in range(length)]
+        return [random.randint(0, 9) for _ in range(length)]
     
     def start_game(self):
         """
@@ -241,6 +227,7 @@ class DigitsGame(Screen):
         self.digit_shown_time = 0
         self.game_start_time = pygame.time.get_ticks()
         self.game_end_time = 0
+        self.saved = False
         
         print(f"✓ Игра начата. Последовательность: {self.sequence}, уровень: {self.level}")
     
@@ -286,7 +273,7 @@ class DigitsGame(Screen):
                     self.user_input.pop()
                     print(f"◄ Удалена цифра. Текущий ввод: {self.user_input}")
             
-            # Enter — если всё введено, переходим на следующий этап или проверяем
+            # Enter — если всё введено, проверяем
             elif event.key == pygame.K_RETURN:
                 if len(self.user_input) == len(self.sequence):
                     self._check_input()
@@ -324,6 +311,7 @@ class DigitsGame(Screen):
                 self.state = STATE_LOSE
                 self.game_end_time = pygame.time.get_ticks()
                 self._play_sound('lose')
+                self._save_results()
                 print(f"✗ Игра завершена. Конец попыток.")
             else:
                 # Очищаем ввод и начинаем заново
@@ -337,6 +325,7 @@ class DigitsGame(Screen):
             self.state = STATE_WIN
             self.game_end_time = pygame.time.get_ticks()
             self._play_sound('win')
+            self._save_results()
             print(f"✓ Победа! Последовательность введена правильно. Уровень: {self.level}")
             
             # Автоматическое увеличение уровня после каждой победы
@@ -347,17 +336,15 @@ class DigitsGame(Screen):
             self.state = STATE_LOSE
             self.game_end_time = pygame.time.get_ticks()
             self._play_sound('lose')
+            self._save_results()
             print(f"✗ Поражение.")
     
     def _play_sound(self, sound_type: str):
         """
-        Воспроизводит звук через sound_manager (если доступен).
+        Воспроизводит звук через модуль audio.
         
         :param sound_type: тип звука ('correct', 'wrong', 'win', 'lose')
         """
-        if not self.sound_manager:
-            return
-        
         sound_path = None
         if sound_type == 'correct':
             sound_path = config.SEQUENCE_CORRECT_SOUND
@@ -370,9 +357,65 @@ class DigitsGame(Screen):
         
         if sound_path:
             try:
-                self.sound_manager.load_sound(sound_path).play()
+                from modules import audio
+                sound = audio.load_sound(sound_path)
+                if sound:
+                    sound.play()
             except Exception as e:
-                print(f"⚠ Ошибка при попытке воспроизвести звук {sound_type}: {e}")
+                print(f"⚠ Ошибка при воспроизведении звука {sound_type}: {e}")
+    
+    def _save_results(self):
+        """Сохраняет результаты в БД и обновляет статистику в меню."""
+        if self.saved:
+            return
+        
+        current_user = self.manager.context.get('current_user')
+        
+        if not current_user:
+            return
+        
+        # Вычисляем очки: 10 * длина последовательности за победу, 0 за поражение
+        if self.state == STATE_WIN:
+            score = len(self.sequence) * 10
+        else:
+            score = 0
+        
+        duration = max(0, (self.game_end_time - self.game_start_time) // 1000)
+        
+        # Сохраняем в контекст
+        self.manager.context['last_digits_stats'] = {
+            'won': self.state == STATE_WIN,
+            'score': score,
+            'level': self.level - 1 if self.state == STATE_WIN else self.level,
+            'duration': duration,
+            'sequence': self.sequence,
+            'user_input': self.user_input,
+            'completed_at': self.game_end_time
+        }
+        
+        # Сохраняем в БД
+        db = DatabaseManager(config.DB_PATH)
+        session = GameSession(
+            user_id=current_user.id,
+            game_type='digits',
+            score=score,
+            level=self.difficulty,
+            duration=duration
+        )
+        
+        try:
+            db.save_game_session(session)
+            print(f"✓ Результаты сохранены: {score} очков")
+            
+            # Обновить статистику в главном меню
+            menu_screen = self.manager.screens.get('menu')
+            if menu_screen and hasattr(menu_screen, 'refresh_stats'):
+                menu_screen.refresh_stats()
+                
+        except Exception as e:
+            print(f"⚠ Ошибка сохранения: {e}")
+        
+        self.saved = True
     
     def update(self):
         """
@@ -388,16 +431,15 @@ class DigitsGame(Screen):
         Показывает каждую цифру в течение self.speed секунд,
         между ними — пауза (чёрный экран) в течение DIGIT_PAUSE_MS мс.
         """
+        if not self.sequence:
+            return
+            
         current_time = pygame.time.get_ticks()
         elapsed = current_time - self.game_start_time
         
-        # Проверяем, если это первый вызов демонстрации
-        if self.demo_start_time == 0:
-            self.demo_start_time = self.game_start_time
-        
         # Общее время на одну цифру: время показа + пауза
-        digit_duration = int((self.speed + DIGIT_PAUSE_MS / 1000) * 1000)  # в миллисекундах
-        show_duration = int(self.speed * 1000)  # время показа в миллисекундах
+        digit_duration = int((self.speed + DIGIT_PAUSE_MS / 1000) * 1000)
+        show_duration = int(self.speed * 1000)
         
         # Текущая цифра для показа
         digit_index = elapsed // digit_duration
@@ -468,6 +510,14 @@ class DigitsGame(Screen):
         title_rect.top = 50
         screen.blit(title_surf, title_rect)
         
+        # Текущая длина последовательности
+        length_text = f"{self.loc.get('level')}: {len(self.sequence)}"
+        length_surf = self.font.render(length_text, True, config.COLOR_BLACK)
+        length_rect = length_surf.get_rect()
+        length_rect.centerx = screen.get_width() // 2
+        length_rect.top = 120
+        screen.blit(length_surf, length_rect)
+        
         # Подсказка с текущим прогрессом
         prompt_text = self.loc.get('input_prompt').format(
             current=len(self.user_input) + 1,
@@ -476,7 +526,7 @@ class DigitsGame(Screen):
         prompt_surf = self.font.render(prompt_text, True, config.COLOR_BLACK)
         prompt_rect = prompt_surf.get_rect()
         prompt_rect.centerx = screen.get_width() // 2
-        prompt_rect.top = 150
+        prompt_rect.top = 180
         screen.blit(prompt_surf, prompt_rect)
         
         # Крупное отображение текущей введённой цифры (если есть)
@@ -499,12 +549,12 @@ class DigitsGame(Screen):
         screen.blit(attempts_surf, attempts_rect)
         
         # Подсказка внизу
-        hint_text = f"Нажимайте цифры 0-9, Enter для подтверждения, Backspace для удаления, Escape для выхода"
-        hint_font = pygame.font.Font(None, 18)
+        hint_text = "0-9 | Backspace | Enter"
+        hint_font = pygame.font.Font(None, 24)
         hint_surf = hint_font.render(hint_text, True, config.COLOR_GRAY_DARK)
         hint_rect = hint_surf.get_rect()
         hint_rect.centerx = screen.get_width() // 2
-        hint_rect.bottom = screen.get_height() - 10
+        hint_rect.bottom = screen.get_height() - 20
         screen.blit(hint_surf, hint_rect)
     
     def _draw_progress_bar(self, screen, current: int, total: int):
@@ -515,10 +565,10 @@ class DigitsGame(Screen):
         :param current: текущее значение
         :param total: максимальное значение
         """
-        bar_width = 300
-        bar_height = 30
+        bar_width = 400
+        bar_height = 40
         bar_x = screen.get_width() // 2 - bar_width // 2
-        bar_y = 480
+        bar_y = 460
         
         # Фон бара
         pygame.draw.rect(screen, config.COLOR_GRAY_LIGHT, (bar_x, bar_y, bar_width, bar_height))
@@ -529,11 +579,11 @@ class DigitsGame(Screen):
             pygame.draw.rect(screen, config.COLOR_GREEN, (bar_x, bar_y, filled_width, bar_height))
         
         # Границы
-        pygame.draw.rect(screen, config.COLOR_GRAY, (bar_x, bar_y, bar_width, bar_height), 2)
+        pygame.draw.rect(screen, config.COLOR_GRAY, (bar_x, bar_y, bar_width, bar_height), 3)
         
         # Текст: "2/3"
         progress_text = f"{current}/{total}"
-        progress_font = pygame.font.Font(None, 20)
+        progress_font = pygame.font.Font(None, 28)
         progress_surf = progress_font.render(progress_text, True, config.COLOR_BLACK)
         progress_rect = progress_surf.get_rect()
         progress_rect.center = (bar_x + bar_width // 2, bar_y + bar_height // 2)
@@ -564,12 +614,19 @@ class DigitsGame(Screen):
         # Детали результата
         elapsed = max(0, (self.game_end_time - self.game_start_time) // 1000)
         difficulty_names = {1: self.loc.get('easy'), 2: self.loc.get('medium'), 3: self.loc.get('hard')}
-        level_up_text = " 🎉" if self.state == STATE_WIN else ""
+        
+        if is_win:
+            score_text = f"{self.loc.get('score')}: {len(self.sequence) * 10}"
+            level_up_text = " 🎉"
+        else:
+            score_text = f"{self.loc.get('score')}: 0"
+            level_up_text = ""
+        
         self.result_details.text = (
-            f"{self.loc.get('level')}: {self.level}{level_up_text} | "
+            f"{score_text} | "
+            f"{self.loc.get('level')}: {len(self.sequence)}{level_up_text} | "
             f"{self.loc.get('difficulty')}: {difficulty_names.get(self.difficulty, str(self.difficulty))} | "
-            f"{self.loc.get('time')}: {elapsed}с | "
-            f"{self.loc.get('score')}: {len(self.sequence) * 10}"
+            f"{self.loc.get('time')}: {elapsed}с"
         )
         self.result_details._update_surface()
         self.result_details.draw(screen)
