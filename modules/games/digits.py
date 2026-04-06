@@ -14,7 +14,7 @@
 
 import pygame
 import random
-from typing import Optional, Dict, List, Any
+from typing import Dict, List, Any
 import config
 from modules.ui.screen import Screen
 from modules.ui.button import Button

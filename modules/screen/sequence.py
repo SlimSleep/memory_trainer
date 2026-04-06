@@ -68,9 +68,9 @@ class SequenceScreen(Screen):
         
         self.status_label = Label(
             x=screen_width // 2,
-            y=screen_height - 80,
+            y=screen_height - 260,
             text_key=None,
-            font=self.font_small,
+            font=self.font,
             color=config.COLOR_BLACK,
             center=True,
             localizer=None

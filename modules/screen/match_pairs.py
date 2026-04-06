@@ -95,9 +95,9 @@ class MatchPairsScreen(Screen):
         self.manager.context['match_pairs_level'] = level
 
         board_rect = pygame.Rect(
-            20,
-            180,
-            self.manager.screen.get_width() - 40,
+            0,
+            140,
+            self.manager.screen.get_width(),
             self.manager.screen.get_height() - 260
         )
 

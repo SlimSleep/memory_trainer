@@ -15,13 +15,14 @@ class SettingsScreen(Screen):
     def __init__(self, manager, localizer, font_normal, font_small):
         super().__init__(manager, localizer, font_normal)
         self.font_small = font_small
+        self.font_normal = font_normal
         self.bg_color = config.COLOR_WHITE
 
         self.title = Label(
             x=manager.screen.get_width() // 2,
             y=80,
             text_key='settings',
-            font=self.font_small,
+            font=self.font_normal,
             color=config.COLOR_BLACK,
             center=True,
             localizer=self.loc
@@ -38,7 +39,7 @@ class SettingsScreen(Screen):
         )
 
         self.sfx_slider = Slider(
-            x=380,
+            x=400,
             y=165,
             width=520,
             height=25,
@@ -59,7 +60,7 @@ class SettingsScreen(Screen):
         )
 
         self.bg_slider = Slider(
-            x=380,
+            x=400,
             y=240,
             width=520,
             height=25,
@@ -80,9 +81,9 @@ class SettingsScreen(Screen):
         )
 
         self.difficulty_slider = Slider(
-            x=380,
+            x=400,
             y=315,
-            width=520,
+            width=300,
             height=25,
             min_val=1,
             max_val=3,
@@ -91,8 +92,8 @@ class SettingsScreen(Screen):
         )
 
         self.difficulty_value = Label(
-            x=920,
-            y=310,
+            x=750,
+            y=315,
             text_key=None,
             font=self.font,
             color=config.COLOR_BLACK,
@@ -101,9 +102,9 @@ class SettingsScreen(Screen):
         )
 
         self.language_slider = Slider(
-            x=380,
+            x=400,
             y=385,
-            width=150,
+            width=100,
             height=30,
             min_val=0,
             max_val=1,
@@ -135,7 +136,7 @@ class SettingsScreen(Screen):
 
         self.status_label = Label(
             x=manager.screen.get_width() // 2,
-            y=430,
+            y=440,
             text_key=None,
             font=self.font_small,
             color=config.COLOR_BLACK,
@@ -151,19 +152,20 @@ class SettingsScreen(Screen):
         """
         lang = 'ru' if value < 0.5 else 'en'
         self.loc.switch_lang(lang)
+        self.status_label.text = None
         print(f"➜ Язык изменён на: {lang}")
 
     def on_sfx_volume_change(self, value):
         volume_percent = int(round(value))
         self.manager.context['sfx_volume'] = volume_percent
         audio.set_sfx_volume(volume_percent / 100)
-        self.status_label.text = self.loc.get('sound_effects').upper() + f": {volume_percent}%"
+        self.status_label.text = self.loc.get('sound_effects') + f": {volume_percent}%"
 
     def on_bg_volume_change(self, value):
         volume_percent = int(round(value))
         self.manager.context['bg_volume'] = volume_percent
         audio.set_bg_volume(volume_percent / 100)
-        self.status_label.text = self.loc.get('background_volume').upper() + f": {volume_percent}%"
+        self.status_label.text = self.loc.get('background_volume') + f": {volume_percent}%"
 
     def on_difficulty_change(self, value):
         level = int(round(value))
@@ -185,7 +187,7 @@ class SettingsScreen(Screen):
         self.bg_slider.set_value(current_bg)
         audio.set_sfx_volume(current_sfx / 100)
         audio.set_bg_volume(current_bg / 100)
-        self.status_label.text = self.loc.get('sound_effects').upper() + f": {current_sfx}%"
+        self.status_label.text = self.loc.get('sound_effects') + f": {current_sfx}%"
 
     def go_back(self):
         self.manager.set_screen('menu')

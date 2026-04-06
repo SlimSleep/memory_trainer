@@ -24,6 +24,7 @@ class Screen:
         self.loc = localizer
         self.font = font
 
+
     def on_enter(self):
         """
         Вызывается когда экран становится активным.
