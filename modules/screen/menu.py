@@ -57,7 +57,7 @@ class MenuScreen(Screen):
             y=180,
             text_key=None,
             font=pygame.font.Font(None, config.FONT_SIZE_SMALL),
-            color=config.COLOR_GRAY_DARK,
+            color=config.COLOR_BLACK,
             center=True,
             localizer=None
         )
