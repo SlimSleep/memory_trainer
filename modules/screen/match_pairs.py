@@ -162,7 +162,14 @@ class MatchPairsScreen(Screen):
             try:
                 db.save_game_session(session)
                 self.status_label.text = self.loc.get('results_saved')
-            except Exception:
+                
+                # Обновить статистику в главном меню
+                menu_screen = self.manager.screens.get('menu')
+                if menu_screen and hasattr(menu_screen, 'refresh_stats'):
+                    menu_screen.refresh_stats()
+                    
+            except Exception as e:
+                print(f"⚠ Ошибка сохранения: {e}")
                 self.status_label.text = self.loc.get('save_failed')
         else:
             self.status_label.text = self.loc.get('results_not_saved')
