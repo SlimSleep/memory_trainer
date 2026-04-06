@@ -298,10 +298,26 @@ class SequenceScreen(Screen):
         
         # Сообщение о завершении
         if self.game and self.game.is_game_over():
+            # Рисуем прямоугольник с результатами
+            results_rect = pygame.Rect(
+                screen.get_width() // 2 - 250,
+                screen.get_height() // 2 - 120,
+                500,
+                100
+            )
+            pygame.draw.rect(screen, config.COLOR_WHITE, results_rect)
+            pygame.draw.rect(screen, config.COLOR_BLACK, results_rect, 3)
+            
             over_text = self.loc.get('game_over')
             over_label = self.font_large.render(over_text, True, config.COLOR_RED)
             over_rect = over_label.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 100))
             screen.blit(over_label, over_rect)
+            
+            # Добавляем результаты
+            results_text = f"{self.loc.get('score')}: {self.game.get_score()}  {self.loc.get('level')}: {self.game.get_sequence_length()}  {self.loc.get('mistakes')}: {self.game.get_mistakes()}"
+            results_label = self.font.render(results_text, True, config.COLOR_BLACK)
+            results_rect_center = results_label.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 70))
+            screen.blit(results_label, results_rect_center)
         
         # Статус
         if self.status_label.text:
