@@ -1,5 +1,6 @@
 import os
 import random
+import itertools
 import pygame
 import config
 
@@ -85,14 +86,9 @@ class MatchPairsGame:
             for sprite_index in sprite_indices
             for color in available_colors
         ]
-        if len(all_combinations) >= self.pair_count:
-            selected_combinations = random.sample(all_combinations, self.pair_count)
-        else:
-            selected_combinations = all_combinations[:]
-            while len(selected_combinations) < self.pair_count:
-                selected_combinations.extend(all_combinations)
-            random.shuffle(selected_combinations)
-            selected_combinations = selected_combinations[:self.pair_count]
+        # Выбираем pair_count комбинаций, повторяя all_combinations если нужно
+        selected_combinations = list(itertools.islice(itertools.cycle(all_combinations), self.pair_count))
+        random.shuffle(selected_combinations)
 
         pair_styles = {
             pair_id: selected_combinations[pair_id]
