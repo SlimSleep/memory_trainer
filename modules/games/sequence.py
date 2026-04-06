@@ -1,6 +1,5 @@
 """
-Игра "Запомни последовательность" (Simon Says) с графическими карточками.
-Логика генерации, проверки и управления последовательностью.
+Игра "Запомни последовательность" с генерацией мелодий на лету.
 """
 
 import os
@@ -12,26 +11,24 @@ from modules import audio
 
 class SequenceGame:
     """
-    Логика игры Sequence с поддержкой спрайтов.
+    Логика игры Sequence с мелодичной генерацией последовательностей.
     """
     
-    # Цвета для фона карточек (50% яркости от активных)
+    # Цвета для фона карточек
     BUTTON_BG_COLORS = {
-        0: (128, 50, 50),    # Тёмно-красный
-        1: (50, 128, 50),    # Тёмно-зелёный
-        2: (50, 50, 128),    # Тёмно-синий
-        3: (128, 128, 50),   # Тёмно-жёлтый
+        0: (128, 50, 50),    # До (красный)
+        1: (50, 128, 50),    # Ре (зелёный)
+        2: (50, 50, 128),    # Ми (синий)
+        3: (128, 128, 50),   # Фа (жёлтый)
     }
     
-    # Активные цвета (100% яркости для подсветки)
     BUTTON_ACTIVE_COLORS = {
-        0: (255, 100, 100),   # Красный
-        1: (100, 255, 100),   # Зелёный
-        2: (100, 100, 255),   # Синий
-        3: (255, 255, 100),   # Жёлтый
+        0: (255, 100, 100),
+        1: (100, 255, 100),
+        2: (100, 100, 255),
+        3: (255, 255, 100),
     }
     
-    # Цвета для наведения мыши
     BUTTON_HOVER_COLORS = {
         0: (200, 80, 80),
         1: (80, 200, 80),
@@ -44,20 +41,22 @@ class SequenceGame:
         Инициализация игры Sequence.
         
         :param level: уровень сложности (1-3)
-            level 1: длина 3-5, задержка 1.0 сек
-            level 2: длина 4-7, задержка 0.8 сек
-            level 3: длина 5-10, задержка 0.6 сек
+            1 - лёгкий: начало 3 ноты, макс 8 нот, медленный показ
+            2 - средний: начало 4 ноты, макс 10 нот, средний показ
+            3 - сложный: начало 5 нот, макс 12 нот, быстрый показ
         """
         self.level = level
         self._init_level_params()
         
-        self.sequence = []           # Исходная последовательность (индексы 0-3)
-        self.player_input = []       # Ввод игрока
-        self.current_step = 0        # Текущий шаг демонстрации
-        self.game_state = 'preview'  # preview, player_turn, game_over, completed
+        # Состояние игры
+        self.sequence = []
+        self.player_input = []
+        self.current_step = 0
+        self.game_state = 'preview'
         self.score = 0
         self.mistakes = 0
         self.max_mistakes = 3
+        self.round_number = 1
         
         # Тайминги
         self.preview_start_time = 0
@@ -65,80 +64,167 @@ class SequenceGame:
         self.active_button = None
         self.active_until = 0
         self.wait_until = 0
-        
-        # Задержка перед первым показом
-        self.initial_delay = 1000  # 1 секунда
+        self.initial_delay = 800
         self.initial_delay_start = 0
         
-        # Спрайты для карточек
-        self.sprites = self._load_sprites()
+        # Время начала игры (для статистики)
+        self.game_start_time = 0
+        self.game_end_time = 0
         
-        self._new_round()
+        # Спрайты
+        self.sprites = self._load_sprites()
+        self.buttons_rect = None
+        
+        # Генерируем первую мелодию
+        self._new_melody()
+        self.game_start_time = pygame.time.get_ticks()
+    
+    def _init_level_params(self):
+        """Инициализирует параметры уровня сложности."""
+        level_config = {
+            1: {  # Лёгкий
+                'base_length': 3,
+                'max_length': 8,
+                'preview_delay': 1000,
+                'button_duration': 500
+            },
+            2: {  # Средний
+                'base_length': 4,
+                'max_length': 10,
+                'preview_delay': 800,
+                'button_duration': 400
+            },
+            3: {  # Сложный
+                'base_length': 5,
+                'max_length': 12,
+                'preview_delay': 600,
+                'button_duration': 300
+            },
+        }
+        cfg = level_config.get(self.level, level_config[1])
+        self.base_sequence_length = cfg['base_length']
+        self.max_sequence_length = cfg['max_length']
+        self.preview_delay = cfg['preview_delay']
+        self.button_duration = cfg['button_duration']
     
     def _load_sprites(self):
-        """Загружает спрайты card1.png - card4.png из папки assets/images."""
+        """Загружает спрайты для кнопок."""
         sprites = []
         for i in range(1, 5):
             path = os.path.join(config.IMAGES_DIR, f'card{i}.png')
             try:
                 sprite = pygame.image.load(path).convert_alpha()
                 sprites.append(sprite)
-            except (pygame.error, FileNotFoundError) as e:
-                print(f"⚠ Не удалось загрузить спрайт {path}: {e}")
+            except (pygame.error, FileNotFoundError):
                 sprites.append(None)
         return sprites
     
-    def _init_level_params(self):
-        """Инициализирует параметры уровня сложности."""
-        level_config = {
-            1: {'min_length': 3, 'max_length': 5, 'preview_delay': 1000, 'button_duration': 400},
-            2: {'min_length': 4, 'max_length': 7, 'preview_delay': 800, 'button_duration': 350},
-            3: {'min_length': 5, 'max_length': 10, 'preview_delay': 600, 'button_duration': 300},
-        }
-        cfg = level_config.get(self.level, level_config[1])
-        self.min_sequence_length = cfg['min_length']
-        self.max_sequence_length = cfg['max_length']
-        self.preview_delay = cfg['preview_delay']
-        self.button_duration = cfg['button_duration']
-    
-    def _new_round(self):
-        """Начинает новый раунд с увеличенной последовательностью."""
-        current_length = len(self.sequence)
-        if current_length < self.min_sequence_length:
-            new_length = self.min_sequence_length
-        else:
-            new_length = min(current_length + 1, self.max_sequence_length)
+    def _generate_melodic_sequence(self, length: int) -> list:
+        """Генерирует мелодичную последовательность нот."""
+        if length <= 0:
+            return []
         
-        # Добавляем случайный элемент (0-3)
-        self.sequence.append(random.randint(0, 3))
+        sequence = [random.randint(0, 3)]
+        repeat_count = 0
+        last_interval = 0
+        
+        for i in range(1, length):
+            last_note = sequence[-1]
+            variety_factor = min(0.8, 0.4 + (i / length) * 0.4)
+            rand = random.random()
+            
+            if rand < 0.6 * variety_factor:
+                direction = random.choice([-1, 1])
+                new_note = (last_note + direction) % 4
+                interval = 1
+            elif rand < 0.85 * variety_factor:
+                new_note = last_note
+                interval = 0
+            else:
+                jump = random.choice([2, 3])
+                direction = random.choice([-1, 1])
+                new_note = (last_note + direction * jump) % 4
+                interval = jump
+            
+            current_interval = abs(new_note - last_note)
+            
+            if interval == 0:
+                repeat_count += 1
+                if repeat_count > 2:
+                    new_note = (last_note + random.choice([-1, 1])) % 4
+                    repeat_count = 0
+            else:
+                repeat_count = 0
+            
+            if current_interval == last_interval and current_interval != 0:
+                if random.random() < 0.5:
+                    alt_note = (last_note + random.choice([-2, 2])) % 4
+                    new_note = alt_note
+            
+            last_interval = current_interval
+            sequence.append(new_note)
+        
+        return sequence
+    
+    def _generate_rhythmic_variation(self, sequence: list) -> list:
+        """Добавляет ритмические вариации."""
+        if len(sequence) < 3:
+            return sequence
+        
+        result = []
+        i = 0
+        
+        while i < len(sequence):
+            note = sequence[i]
+            if random.random() < 0.2 and i < len(sequence) - 1:
+                result.append(note)
+                result.append(note)
+                i += 1
+            else:
+                result.append(note)
+                i += 1
+        
+        return result
+    
+    def _get_current_sequence_length(self) -> int:
+        """Возвращает длину последовательности для текущего раунда."""
+        increment = (self.round_number - 1) // 2
+        length = self.base_sequence_length + increment
+        return min(length, self.max_sequence_length)
+    
+    def _new_melody(self):
+        """Генерирует новую мелодию для текущего раунда."""
+        length = self._get_current_sequence_length()
+        raw_sequence = self._generate_melodic_sequence(length)
+        self.sequence = self._generate_rhythmic_variation(raw_sequence)
         
         self.player_input = []
         self.current_step = 0
         self.game_state = 'preview'
-        self.preview_start_time = pygame.time.get_ticks()
         self.preview_step_time = 0
-        self.initial_delay_start = pygame.time.get_ticks()  # Задержка перед показом
+        self.initial_delay_start = pygame.time.get_ticks()
+    
+    def _advance_to_next_round(self):
+        """Переход к следующему раунду."""
+        round_bonus = len(self.sequence) * 10 * self.level
+        self.score += round_bonus
+        self.round_number += 1
         
-        # Увеличиваем счёт за успешное прохождение раунда
-        if current_length > 0:
-            self.score += 10 * self.level
+        # Проверка на победу (достигнут максимум длины И пройдено минимум 10 раундов)
+        if self._get_current_sequence_length() >= self.max_sequence_length and self.round_number > 10:
+            self.game_state = 'completed'
+            self.game_end_time = pygame.time.get_ticks()
+            return
+        
+        self._new_melody()
     
     def set_buttons_rect(self, buttons_rect: list):
-        """
-        Устанавливает прямоугольники кнопок для определения нажатий.
-        
-        :param buttons_rect: список из 4 pygame.Rect в порядке [красный, зелёный, синий, жёлтый]
-        """
+        """Устанавливает прямоугольники кнопок."""
         self.buttons_rect = buttons_rect
     
     def get_button_at_pos(self, pos) -> int:
-        """
-        Возвращает индекс кнопки по позиции мыши.
-        
-        :param pos: координаты (x, y)
-        :return: индекс 0-3 или None
-        """
-        if not hasattr(self, 'buttons_rect'):
+        """Возвращает индекс кнопки по позиции мыши."""
+        if not hasattr(self, 'buttons_rect') or not self.buttons_rect:
             return None
         
         for i, rect in enumerate(self.buttons_rect):
@@ -147,15 +233,8 @@ class SequenceGame:
         return None
     
     def _play_button_sound(self, button_index: int):
-        """Воспроизводит фортепианную ноту при нажатии/показе кнопки."""
-        from modules import audio
-        audio.play_piano_note(button_index) 
-    
-    def _play_correct_sound(self):
-        """Воспроизводит звук правильного ответа."""
-        sound = audio.load_sound(config.SEQUENCE_CORRECT_SOUND)
-        if sound:
-            sound.play()
+        """Воспроизводит фортепианную ноту."""
+        audio.play_piano_note(button_index)
     
     def _play_wrong_sound(self):
         """Воспроизводит звук ошибки."""
@@ -164,21 +243,13 @@ class SequenceGame:
             sound.play()
     
     def handle_player_input(self, button_index: int, current_time: int) -> bool:
-        """
-        Обрабатывает нажатие игрока.
-        
-        :param button_index: индекс нажатой кнопки (0-3)
-        :param current_time: текущее время в мс
-        :return: True если ввод корректен, False если ошибка
-        """
+        """Обрабатывает нажатие игрока."""
         if self.game_state != 'player_turn':
             return False
         
-        # Проверяем блокировку после ошибки
         if current_time < self.wait_until:
             return False
         
-        # Звук нажатия кнопки
         self._play_button_sound(button_index)
         
         expected_index = len(self.player_input)
@@ -188,97 +259,65 @@ class SequenceGame:
         if button_index == self.sequence[expected_index]:
             self.player_input.append(button_index)
             
-            # Визуальная обратная связь
             self.active_button = button_index
             self.active_until = current_time + 150
             
-            # Звук правильного ответа (после каждого правильного нажатия)
-            self._play_correct_sound()
-            
-            # Проверяем завершение раунда
             if len(self.player_input) == len(self.sequence):
-                # Раунд пройден
-                self._new_round()
+                self._advance_to_next_round()
             return True
         else:
-            # Ошибка
             self.mistakes += 1
-            self.wait_until = current_time + 1000  # Блокировка на 1 сек
-            
-            # Звук ошибки
+            self.wait_until = current_time + 1000
             self._play_wrong_sound()
             
             if self.mistakes >= self.max_mistakes:
                 self.game_state = 'game_over'
+                self.game_end_time = pygame.time.get_ticks()
             else:
-                # Сбрасываем ввод, показываем последовательность заново
                 self.player_input = []
                 self.current_step = 0
                 self.game_state = 'preview'
                 self.preview_start_time = current_time
-                self.preview_step_time = 0
-                self.initial_delay_start = current_time  # Задержка перед повторным показом
+                self.initial_delay_start = current_time
             
             return False
     
     def update(self, current_time: int):
-        """
-        Обновляет состояние игры (анимации, демонстрацию последовательности).
-        
-        :param current_time: текущее время в мс
-        """
-        # Обновление активной кнопки (визуальная обратная связь)
+        """Обновляет состояние игры."""
         if self.active_until and current_time >= self.active_until:
             self.active_button = None
             self.active_until = 0
         
-        # Демонстрация последовательности
         if self.game_state == 'preview':
-            # Проверяем начальную задержку (только для первого показа в раунде)
             if self.current_step == 0 and len(self.player_input) == 0:
                 if current_time < self.initial_delay_start + self.initial_delay:
-                    return  # Ждём завершения задержки
+                    return
             
             if self.preview_step_time == 0:
-                # Начинаем демонстрацию
                 self.preview_step_time = current_time
                 self.current_step = 0
                 self._show_next_preview(current_time)
             elif current_time >= self.preview_step_time + self.preview_delay:
                 self._show_next_preview(current_time)
-        
-        # Блокировка после ошибки
-        if self.game_state == 'player_turn' and current_time < self.wait_until:
-            pass  # Игрок заблокирован
     
     def _show_next_preview(self, current_time: int):
         """Показывает следующий элемент последовательности."""
         if self.current_step >= len(self.sequence):
-            # Демонстрация завершена
             self.game_state = 'player_turn'
             self.preview_step_time = 0
             self.active_button = None
             return
         
-        # Подсвечиваем текущую кнопку
         button_index = self.sequence[self.current_step]
         self.active_button = button_index
         self.active_until = current_time + self.button_duration
-        
-        # Звук при показе последовательности
         self._play_button_sound(button_index)
         
         self.current_step += 1
         self.preview_step_time = current_time + self.button_duration
     
     def get_button_color(self, button_index: int, is_hovered: bool = False) -> tuple:
-        """
-        Возвращает цвет фона кнопки для отрисовки.
-        
-        :param button_index: индекс кнопки
-        :param is_hovered: наведена ли мышь
-        :return: RGB кортеж
-        """
+        """Возвращает цвет кнопки для отрисовки."""
         if self.active_button == button_index:
             return self.BUTTON_ACTIVE_COLORS[button_index]
         elif is_hovered and self.game_state == 'player_turn' and self.wait_until == 0:
@@ -287,55 +326,63 @@ class SequenceGame:
             return self.BUTTON_BG_COLORS[button_index]
     
     def get_button_sprite(self, button_index: int):
-        """
-        Возвращает спрайт для кнопки.
-        
-        :param button_index: индекс кнопки (0-3)
-        :return: Surface с изображением или None
-        """
+        """Возвращает спрайт кнопки."""
         if button_index < len(self.sprites):
             return self.sprites[button_index]
         return None
     
     def is_completed(self) -> bool:
-        """Возвращает True если игра завершена (достигнут максимум длины)."""
-        return len(self.sequence) >= self.max_sequence_length and self.game_state == 'player_turn'
+        return self.game_state == 'completed'
     
     def is_game_over(self) -> bool:
-        """Возвращает True если игра проиграна."""
         return self.game_state == 'game_over'
     
     def is_player_turn(self) -> bool:
-        """Возвращает True если ход игрока."""
         return self.game_state == 'player_turn'
     
     def get_score(self) -> int:
-        """Возвращает текущий счёт."""
         return self.score
     
     def get_level(self) -> int:
-        """Возвращает уровень сложности."""
         return self.level
     
     def get_sequence_length(self) -> int:
-        """Возвращает текущую длину последовательности."""
         return len(self.sequence)
     
     def get_mistakes(self) -> int:
-        """Возвращает количество ошибок."""
         return self.mistakes
     
+    def get_round_number(self) -> int:
+        return self.round_number
+    
     def get_remaining_mistakes(self) -> int:
-        """Возвращает количество оставшихся попыток."""
         return self.max_mistakes - self.mistakes
     
+    def get_duration_seconds(self) -> int:
+        """Возвращает длительность игры в секундах."""
+        if self.game_end_time == 0:
+            return 0
+        return max(0, (self.game_end_time - self.game_start_time) // 1000)
+    
+    def get_stats(self) -> dict:
+        """Возвращает статистику для сохранения."""
+        return {
+            'score': self.score,
+            'level': self.level,
+            'rounds_completed': self.round_number - 1,
+            'max_round_reached': self.round_number - 1,
+            'mistakes': self.mistakes,
+            'duration': self.get_duration_seconds(),
+            'won': self.is_completed(),
+            'sequence_length': self.get_sequence_length()
+        }
+    
     def reset(self):
-        """Полный сброс игры."""
-        self.sequence = []
-        self.player_input = []
-        self.current_step = 0
+        self.round_number = 1
         self.score = 0
         self.mistakes = 0
         self.game_state = 'preview'
         self.active_button = None
-        self._new_round()
+        self.game_start_time = pygame.time.get_ticks()
+        self.game_end_time = 0
+        self._new_melody()
