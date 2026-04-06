@@ -6,7 +6,6 @@ import pygame
 from modules.ui.screen import Screen
 from modules.ui.button import Button
 from modules.ui.label import Label
-from modules.database.db_manager import DatabaseManager
 import config
 
 
@@ -19,12 +18,9 @@ class MenuScreen(Screen):
         self.bg_color = config.COLOR_BG
         
         self.title = None
-        self.user_name_label = None      # Имя пользователя
-        self.user_score_label = None     # Суммарные баллы
+        self.user_label = None
+        self.stats_label = None  # <--- ОБЯЗАТЕЛЬНО
         self.buttons = []
-        
-        self.current_user_id = None      # Кэш ID текущего пользователя
-        self.current_score = 0           # Кэш суммы баллов
         
         self.create_ui()
 
@@ -36,7 +32,7 @@ class MenuScreen(Screen):
         # Заголовок
         self.title = Label(
             x=screen_width // 2,
-            y=60,
+            y=80,
             text_key="menu_title",
             font=self.font_large,
             color=config.COLOR_BLACK,
@@ -44,24 +40,24 @@ class MenuScreen(Screen):
             localizer=self.loc
         )
 
-        # Метка имени пользователя
-        self.user_name_label = Label(
+        # Метка пользователя
+        self.user_label = Label(
             x=screen_width // 2,
-            y=130,
+            y=140,
             text_key=None,
             font=self.font,
-            color=config.COLOR_BLUE,
+            color=config.COLOR_BLACK,
             center=True,
             localizer=None
         )
         
-        # Метка суммарных баллов
-        self.user_score_label = Label(
+        # Метка статистики (СОЗДАЁМ)
+        self.stats_label = Label(
             x=screen_width // 2,
-            y=170,
+            y=180,
             text_key=None,
-            font=self.font,
-            color=config.COLOR_GREEN,
+            font=pygame.font.Font(None, config.FONT_SIZE_SMALL),
+            color=config.COLOR_GRAY_DARK,
             center=True,
             localizer=None
         )
@@ -69,7 +65,7 @@ class MenuScreen(Screen):
         # Кнопка "Вход / регистрация"
         login_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=240,
+            y=230,
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -84,7 +80,7 @@ class MenuScreen(Screen):
         # Кнопка "Найди пару"
         match_pairs_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=240 + config.BUTTON_HEIGHT + config.BUTTON_SPACING,
+            y=230 + config.BUTTON_HEIGHT + config.BUTTON_SPACING,
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -99,7 +95,7 @@ class MenuScreen(Screen):
         # Кнопка "Запомни последовательность"
         sequence_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=240 + 2 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
+            y=230 + 2 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -113,7 +109,7 @@ class MenuScreen(Screen):
         # Кнопка "Повтори цифры"
         digits_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=240 + 3 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
+            y=230 + 3 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -127,7 +123,7 @@ class MenuScreen(Screen):
         # Кнопка "Настройки"
         settings_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=240 + 4 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
+            y=230 + 4 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -142,7 +138,7 @@ class MenuScreen(Screen):
         # Кнопка "Выход"
         exit_btn = Button(
             x=screen_width // 2 - config.BUTTON_WIDTH // 2,
-            y=240 + 5 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
+            y=230 + 5 * (config.BUTTON_HEIGHT + config.BUTTON_SPACING),
             width=config.BUTTON_WIDTH,
             height=config.BUTTON_HEIGHT,
             font=self.font,
@@ -153,40 +149,6 @@ class MenuScreen(Screen):
             localizer=self.loc
         )
         self.buttons.append(exit_btn)
-    
-    def _update_user_stats(self):
-        """Обновляет отображение статистики текущего пользователя."""
-        current_user = self.manager.context.get('current_user')
-        
-        if current_user:
-            # Обновляем имя пользователя
-            self.user_name_label.text = f"{self.loc.get('user')}: {current_user.username}"
-            
-            # Проверяем, изменился ли пользователь (сравниваем ID)
-            if self.current_user_id != current_user.id:
-                self.current_user_id = current_user.id
-                # Загружаем сумму баллов из БД
-                db = DatabaseManager(config.DB_PATH)
-                self.current_score = db.get_user_total_score(current_user.id)
-            
-            self.user_score_label.text = f" {self.loc.get('total_score')}: {self.current_score}"
-        else:
-            self.user_name_label.text = self.loc.get('not_logged_in')
-            self.user_score_label.text = ""
-            self.current_user_id = None
-            self.current_score = 0
-        
-        self.user_name_label._update_surface()
-        self.user_score_label._update_surface()
-    
-    def refresh_stats(self):
-        """Принудительно обновляет статистику (вызывается после сохранения результатов)."""
-        current_user = self.manager.context.get('current_user')
-        if current_user:
-            db = DatabaseManager(config.DB_PATH)
-            self.current_score = db.get_user_total_score(current_user.id)
-            self.user_score_label.text = f"🏆 {self.loc.get('total_score')}: {self.current_score}"
-            self.user_score_label._update_surface()
 
     def on_login(self):
         """Обработчик кнопки 'Вход / регистрация'."""
@@ -218,10 +180,51 @@ class MenuScreen(Screen):
         print("➜ Нажата кнопка 'Выход'")
         pygame.event.post(pygame.event.Event(pygame.QUIT))
 
+    def _update_stats(self):
+        """Обновляет отображение статистики пользователя."""
+        current_user = self.manager.context.get('current_user')
+        
+        if current_user and self.stats_label:
+            from modules.database.db_manager import DatabaseManager
+            db = DatabaseManager(config.DB_PATH)
+            
+            # Получаем все игры пользователя
+            conn = db._get_connection()
+            cursor = conn.cursor()
+            
+            # Суммарное количество очков
+            cursor.execute('''
+                SELECT SUM(score) as total_score, COUNT(*) as total_games
+                FROM game_sessions
+                WHERE user_id = ?
+            ''', (current_user.id,))
+            
+            result = cursor.fetchone()
+            total_score = result['total_score'] if result['total_score'] else 0
+            total_games = result['total_games'] if result['total_games'] else 0
+            
+            # Формируем текст статистики
+            stats_text = f"Всего игр: {total_games} | Сумма очков: {total_score}"
+            self.stats_label.text = stats_text
+            self.stats_label._update_surface()
+        elif self.stats_label:
+            self.stats_label.text = self.loc.get('results_not_saved')
+            self.stats_label._update_surface()
+
     def on_enter(self):
         """Вызывается при входе на экран."""
         print("✓ Вход на экран меню")
-        self._update_user_stats()
+        
+        # Обновляем информацию о пользователе
+        current_user = self.manager.context.get('current_user')
+        if current_user:
+            self.user_label.text = f"{self.loc.get('user')}: {current_user.username}"
+        else:
+            self.user_label.text = self.loc.get('not_logged_in')
+        self.user_label._update_surface()
+        
+        # Обновляем статистику
+        self._update_stats()
 
     def handle_event(self, event):
         """Обрабатывает события."""
@@ -238,11 +241,14 @@ class MenuScreen(Screen):
         
         # Заголовок
         self.title.draw(screen)
+
+        # Информация о пользователе
+        self.user_label.draw(screen)
         
-        # Статистика пользователя
-        self.user_name_label.draw(screen)
-        self.user_score_label.draw(screen)
-        
+        # Статистика (если создана)
+        if self.stats_label:
+            self.stats_label.draw(screen)
+
         # Кнопки
         for btn in self.buttons:
             btn.draw(screen)
