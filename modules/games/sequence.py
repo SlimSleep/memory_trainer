@@ -147,10 +147,9 @@ class SequenceGame:
         return None
     
     def _play_button_sound(self, button_index: int):
-        """Воспроизводит звук нажатия кнопки."""
-        sound = audio.load_sound(config.SEQUENCE_BUTTON_SOUND)
-        if sound:
-            sound.play()
+        """Воспроизводит фортепианную ноту при нажатии/показе кнопки."""
+        from modules import audio
+        audio.play_piano_note(button_index) 
     
     def _play_correct_sound(self):
         """Воспроизводит звук правильного ответа."""
