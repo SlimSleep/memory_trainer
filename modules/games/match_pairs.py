@@ -83,8 +83,8 @@ class MatchPairsGame:
         sprite_indices = list(range(len(self.card_sprites))) if self.card_sprites else [None]
         all_combinations = [
             (sprite_index, color)
-            for sprite_index in sprite_indices
             for color in available_colors
+            for sprite_index in sprite_indices
         ]
         # Выбираем pair_count комбинаций, повторяя all_combinations если нужно
         selected_combinations = list(itertools.islice(itertools.cycle(all_combinations), self.pair_count))
