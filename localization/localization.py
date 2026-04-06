@@ -2,6 +2,9 @@
 import json
 import os
 from pathlib import Path
+from logger import get_logger
+
+_logger = get_logger()
 
 
 # Встроенные значения по умолчанию для резервного использования
@@ -130,7 +133,7 @@ class Localizer:
             try:
                 callback()
             except Exception as e:
-                print(f"Ошибка при уведомлении наблюдателя: {e}")
+                _logger.error(f"Ошибка при уведомлении наблюдателя: {e}")
 
     def load_lang(self, lang):
         """
@@ -151,12 +154,12 @@ class Localizer:
                     loaded_strings = json.load(f)
                     # Объединяем загруженные значения со встроенными (загруженные приоритетнее)
                     self.strings.update(loaded_strings)
-                    print(f"✓ Локализация загружена: {json_file}")
+                    _logger.info(f"✓ Локализация загружена: {json_file}")
             else:
-                print(f"⚠ Файл локализации не найден: {json_file}, используются встроенные значения")
+                _logger.warning(f"⚠ Файл локализации не найден: {json_file}, используются встроенные значения")
         except (json.JSONDecodeError, IOError) as e:
-            print(f"⚠ Ошибка загрузки локализации из {json_file}: {e}")
-            print(f"  Используются встроенные значения для языка: {lang}")
+            _logger.warning(f"⚠ Ошибка загрузки локализации из {json_file}: {e}")
+            _logger.warning(f"  Используются встроенные значения для языка: {lang}")
 
     def get(self, key):
         """
@@ -179,7 +182,7 @@ class Localizer:
             self.load_lang(lang)
             self._notify_observers()
         else:
-            print(f"⚠ Неизвестный язык: {lang}. Поддерживаемые языки: ru, en")
+            _logger.warning(f"⚠ Неизвестный язык: {lang}. Поддерживаемые языки: ru, en")
 
     def get_lang(self):
         """Возвращает текущий выбранный язык."""

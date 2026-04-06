@@ -7,6 +7,7 @@
 import pygame
 import sys
 import config
+from logger import get_logger
 from localization.localization import Localizer
 from modules import audio
 from modules.ui.screen_manager import ScreenManager
@@ -21,38 +22,39 @@ from modules.database.db_manager import DatabaseManager
 
 def main():
     """Главная функция приложения."""
+    logger = get_logger()
     
     # Инициализация Pygame
     pygame.init()
     audio.init_audio()
-    print("✓ Pygame инициализирован")
+    logger.info("✓ Pygame инициализирован")
     
     # Создание окна
     screen = pygame.display.set_mode((config.WINDOW_WIDTH, config.WINDOW_HEIGHT))
     pygame.display.set_caption(config.WINDOW_TITLE)
-    print(f"✓ Окно создано: {config.WINDOW_WIDTH}x{config.WINDOW_HEIGHT}")
+    logger.info(f"✓ Окно создано: {config.WINDOW_WIDTH}x{config.WINDOW_HEIGHT}")
     
     # Инициализация локализации
     localizer = Localizer(lang=config.DEFAULT_LANGUAGE, localization_dir=config.LOCALIZATION_DIR)
-    print(f"✓ Локализатор инициализирован, язык: {config.DEFAULT_LANGUAGE}")
+    logger.info(f"✓ Локализатор инициализирован, язык: {config.DEFAULT_LANGUAGE}")
 
     # Инициализация БД
     db = DatabaseManager(config.DB_PATH)
-    print(f"✓ База данных инициализирована: {config.DB_PATH}")
+    logger.info(f"✓ База данных инициализирована: {config.DB_PATH}")
 
     # Создание шрифтов
     font_small = pygame.font.Font(None, config.FONT_SIZE_SMALL)
     font_normal = pygame.font.Font(None, config.FONT_SIZE_NORMAL)
     font_large = pygame.font.Font(None, config.FONT_SIZE_LARGE)
     font_title = pygame.font.Font(None, config.FONT_SIZE_TITLE)
-    print("✓ Шрифты инициализированы")
+    logger.info("✓ Шрифты инициализированы")
     
     # Создание менеджера экранов
     screen_manager = ScreenManager(screen)
     screen_manager.context['sfx_volume'] = config.DEFAULT_SFX_VOLUME_PERCENT
     screen_manager.context['bg_volume'] = config.DEFAULT_BG_VOLUME_PERCENT
     screen_manager.context['volume'] = config.DEFAULT_SFX_VOLUME_PERCENT
-    print("✓ ScreenManager инициализирован")
+    logger.info("✓ ScreenManager инициализирован")
     
     # Создание экранов и добавление в менеджер
     menu_screen = MenuScreen(screen_manager, localizer, font_normal, font_large)
@@ -78,31 +80,28 @@ def main():
         user = db.get_user_by_name(remembered_username)
         if user:
             screen_manager.context['current_user'] = user
-            print(f"✓ Сессия загружена: {remembered_username}")
+            logger.info(f"✓ Сессия загружена: {remembered_username}")
         else:
-            print(f"⚠ Сессия содержит неизвестного пользователя: {remembered_username}")
+            logger.warning(f"⚠ Сессия содержит неизвестного пользователя: {remembered_username}")
 
     screen_manager.set_screen("login")
-    print("✓ Экран логина активирован")
+    logger.info("✓ Экран логина активирован")
     
     # Главный цикл приложения
     clock = pygame.time.Clock()
     running = True
     
-    print("\n" + "="*60)
-    print("🎮 ТРЕНАЖЁР ПАМЯТИ - ЗАПУЩЕН")
-    print("="*60)
-    print("• Доступные игры: Найди пару, Запомни последовательность, Повтори цифры")
-    print("• Используйте слайдер в настройках для смены языка")
-    print("• Нажмите 'Выход' или закройте окно для завершения")
-    print("="*60 + "\n")
+    logger.info("🎮 ТРЕНАЖЁР ПАМЯТИ - ЗАПУЩЕН")
+    logger.info("• Доступные игры: Найди пару, Запомни последовательность, Повтори цифры")
+    logger.info("• Используйте слайдер в настройках для смены языка")
+    logger.info("• Нажмите 'Выход' или закройте окно для завершения")
     
     while running:
         # Обработка событий
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-                print("\n✓ Приложение закрывается...")
+                logger.info("✓ Приложение закрывается...")
             else:
                 screen_manager.handle_event(event)
         
@@ -117,7 +116,7 @@ def main():
     
     # Завершение
     pygame.quit()
-    print("✓ Pygame завершен")
+    logger.info("✓ Pygame завершен")
     sys.exit()
 
 

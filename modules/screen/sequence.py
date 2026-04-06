@@ -294,9 +294,9 @@ class SequenceScreen(Screen):
                 
                 pygame.draw.rect(screen, config.COLOR_BLACK, rect, 3)
         
-        # Окно результатов (как в match_pairs)
+        # Окно результатов
         if self.game and self.game.is_completed():
-            # Рисуем прямоугольник с результатами
+            # Рисуем прямоугольник с результатами для победы
             results_rect = pygame.Rect(
                 screen.get_width() // 2 - 250,
                 100,
@@ -317,25 +317,26 @@ class SequenceScreen(Screen):
             screen.blit(summary_label, summary_rect)
         
         elif self.game and self.game.is_game_over():
-            # Рисуем прямоугольник с результатами
+            # Рисуем прямоугольник с результатами для поражения
             results_rect = pygame.Rect(
                 screen.get_width() // 2 - 250,
-                100,
+                screen.get_height() // 2 - 120,
                 500,
-                120
+                100
             )
             pygame.draw.rect(screen, config.COLOR_WHITE, results_rect)
             pygame.draw.rect(screen, config.COLOR_BLACK, results_rect, 3)
             
             over_text = self.loc.get('game_over')
-            finished_label = self.font_large.render(over_text, True, config.COLOR_RED)
-            finished_rect = finished_label.get_rect(center=(screen.get_width() // 2, 120))
-            screen.blit(finished_label, finished_rect)
-
-            summary_text = f"{self.loc.get('score')}: {self.game.get_score()}  {self.loc.get('round')}: {self.game.get_round_number() - 1}  {self.loc.get('mistakes')}: {self.game.get_mistakes()}"
-            summary_label = self.font.render(summary_text, True, config.COLOR_BLACK)
-            summary_rect = summary_label.get_rect(center=(screen.get_width() // 2, 155))
-            screen.blit(summary_label, summary_rect)
+            over_label = self.font_large.render(over_text, True, config.COLOR_RED)
+            over_rect = over_label.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 100))
+            screen.blit(over_label, over_rect)
+            
+            # Добавляем результаты
+            results_text = f"{self.loc.get('score')}: {self.game.get_score()}  {self.loc.get('level')}: {self.game.get_sequence_length()}  {self.loc.get('mistakes')}: {self.game.get_mistakes()}"
+            results_label = self.font.render(results_text, True, config.COLOR_BLACK)
+            results_rect_center = results_label.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 70))
+            screen.blit(results_label, results_rect_center)
         
         if self.status_label.text:
             self.status_label._update_surface()

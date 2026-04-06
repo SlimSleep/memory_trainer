@@ -2,10 +2,12 @@ import pygame
 import config
 import math
 import numpy as np
+from logger import get_logger
 
 _loaded_sounds = set()
 _sfx_volume = config.DEFAULT_SFX_VOLUME_PERCENT / 100
 _bg_volume = config.DEFAULT_BG_VOLUME_PERCENT / 100
+_logger = get_logger()
 
 # Фортепианные ноты (до, ре, ми, фа)
 PIANO_NOTES = {
@@ -22,9 +24,9 @@ def init_audio():
     """Initialize the mixer and set sound/music volumes."""
     try:
         pygame.mixer.init(frequency=44100)
-        print("✓ Pygame mixer инициализирован")
+        _logger.info("✓ Pygame mixer инициализирован")
     except pygame.error as e:
-        print(f"⚠ Не удалось инициализировать mixer: {e}")
+        _logger.error(f"⚠ Не удалось инициализировать mixer: {e}")
         return
     set_sfx_volume(_sfx_volume)
     set_bg_volume(_bg_volume)
@@ -155,7 +157,11 @@ def play_background_music(path):
         pygame.mixer.music.set_volume(_bg_volume)
         pygame.mixer.music.play(-1)
     except (pygame.error, FileNotFoundError) as e:
+<<<<<<< HEAD
         print(f"⚠ Ошибка при загрузке фоновой музыки {path}: {e}")
+=======
+        _logger.warning(f"⚠ Ошибка при загрузке фоновой музыки {path}: {e}. Музыка не будет воспроизводиться.")
+>>>>>>> 0185692 (Добавить систему логирования с использованием модуля logging для отслеживания событий и ошибок)
 
 
 def load_sound(path):
@@ -167,5 +173,9 @@ def load_sound(path):
         _loaded_sounds.add(sound)
         return sound
     except (pygame.error, FileNotFoundError) as e:
+<<<<<<< HEAD
         print(f"⚠ Ошибка при загрузке звука {path}: {e}")
+=======
+        _logger.warning(f"⚠ Ошибка при загрузке звука {path}: {e}. Звук не будет воспроизводиться.")
+>>>>>>> 0185692 (Добавить систему логирования с использованием модуля logging для отслеживания событий и ошибок)
         return None
