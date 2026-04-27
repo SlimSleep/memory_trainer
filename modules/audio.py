@@ -157,11 +157,11 @@ def play_background_music(path):
         pygame.mixer.music.set_volume(_bg_volume)
         pygame.mixer.music.play(-1)
     except (pygame.error, FileNotFoundError) as e:
-<<<<<<< HEAD
+
         print(f"⚠ Ошибка при загрузке фоновой музыки {path}: {e}")
-=======
+
         _logger.warning(f"⚠ Ошибка при загрузке фоновой музыки {path}: {e}. Музыка не будет воспроизводиться.")
->>>>>>> 0185692 (Добавить систему логирования с использованием модуля logging для отслеживания событий и ошибок)
+
 
 
 def load_sound(path):
@@ -173,9 +173,9 @@ def load_sound(path):
         _loaded_sounds.add(sound)
         return sound
     except (pygame.error, FileNotFoundError) as e:
-<<<<<<< HEAD
+
         print(f"⚠ Ошибка при загрузке звука {path}: {e}")
-=======
+
         _logger.warning(f"⚠ Ошибка при загрузке звука {path}: {e}. Звук не будет воспроизводиться.")
->>>>>>> 0185692 (Добавить систему логирования с использованием модуля logging для отслеживания событий и ошибок)
+
         return None
